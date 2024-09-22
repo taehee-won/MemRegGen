@@ -1,0 +1,16 @@
+# Python cache and log files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Python package cahce
+build/
+dist/
+
+# Temporary files created by code editors
+tempCodeRunnerFile.py
+
+# OS generated files
+.DS_Store
