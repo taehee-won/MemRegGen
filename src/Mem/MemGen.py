@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 
 from inc import WriteFile
 
-from src.MemGen.MemConfig import MemConfig
-from src.MemGen.MemDef import MemDef
+from src.Mem.MemConfig import MemConfig
+from src.Mem.MemDef import MemDef
 
 
 class MemGen(ABC):

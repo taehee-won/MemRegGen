@@ -3,8 +3,8 @@ from argparse import ArgumentParser
 from os.path import splitext
 
 from inc import InvalidFileExtensionError, Str, ReadFile, WriteFile
-from src.MemGen import MemConfig, MemDef
-from src.MemGen import MemGen, MemCHeader, MemVerilogHeader, MemDoc
+from src.Mem import MemConfig, MemDef
+from src.Mem import MemGen, MemCHeader, MemVerilogHeader, MemDoc
 
 
 name: Final[str] = "Memory Generator"

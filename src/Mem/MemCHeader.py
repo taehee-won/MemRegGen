@@ -1,8 +1,8 @@
 from inc.WriteFile import WriteFile
 
-from src.MemGen.MemGen import MemGen
-from src.MemGen.MemConfig import MemConfig
-from src.MemGen.MemDef import MemDef
+from src.Mem.MemGen import MemGen
+from src.Mem.MemConfig import MemConfig
+from src.Mem.MemDef import MemDef
 
 
 class MemCHeader(MemGen):

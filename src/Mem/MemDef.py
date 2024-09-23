@@ -15,7 +15,7 @@ from inc import (
 )
 from inc import ReadFile, Str, HexStr, IntStr
 
-from src.MemGen.MemConfig import MemConfig
+from src.Mem.MemConfig import MemConfig
 
 
 class _Key(Enum):
