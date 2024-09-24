@@ -18,7 +18,6 @@ class MemConfig:
         "array": "ch",
         "bits": 64,
         # align: int = align is set from bits if bits is 64, 16 / if bits is 32, 8
-        "alias": True,
         "debug": False,
     }
 
@@ -31,7 +30,6 @@ class MemConfig:
             ["array", str],
             ["bits", int],
             ["align", int],
-            ["alias", bool],
             ["debug", bool],
         ]:
             if ((value := getattr(args, name, None)) is not None) and (
@@ -116,7 +114,6 @@ class MemConfig:
         self._array: str = args.array
         self._bits: int = args.bits
         self._align: int = args.align
-        self._alias: bool = args.alias
         self._debug: bool = args.debug
 
     def __init__(self, args: Namespace) -> None:
@@ -137,7 +134,6 @@ class MemConfig:
                         "array",
                         "bits",
                         "align",
-                        "alias",
                         "debug",
                     ]
                 ],
@@ -172,10 +168,6 @@ class MemConfig:
     @property
     def align(self) -> int:
         return self._align
-
-    @property
-    def alias(self) -> bool:
-        return self._alias
 
     @property
     def debug(self) -> bool:

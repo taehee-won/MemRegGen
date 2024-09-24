@@ -7,3 +7,7 @@ class IntStr(str):
             raise InvalidIntStrError(value)
 
         return super().__new__(cls, value)
+
+    @property
+    def value(self) -> int:
+        return int(self)

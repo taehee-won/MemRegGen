@@ -10,7 +10,6 @@ from inc.Exceptions import (
     NotExistArgumentError,
     InvalidArgumentError,
     InvalidArgumentTypeError,
-    InvalidRowColumnError,
     InvalidHexStrError,
     InvalidIntStrError,
     InvalidDefineError,
@@ -19,6 +18,7 @@ from inc.Exceptions import (
     InvalidNameError,
     NotExistAliasError,
     NotExistBookmarkError,
+    InvalidAlignError,
 )
 from inc.ReadFile import ReadFile
 from inc.WriteFile import WriteFile

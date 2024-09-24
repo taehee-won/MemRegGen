@@ -7,20 +7,18 @@ from typing import Optional
 class ApplicationError(Exception):
     def __init__(self, msg: str):
         super().__init__(
-            f"{msg}"
-            + "\n\n"
-            + "This error occurred due to application."
-            + " Please new issue to https://github.com/taehee-won/MemRegGen/issues"
+            f"{msg}\n"
+            + "    : This error occurred due to application.\n"
+            + "      Please new issue to https://github.com/taehee-won/MemRegGen/issues"
         )
 
 
 class UserError(Exception):
     def __init__(self, msg: str):
         super().__init__(
-            f"{msg}"
-            + "\n\n"
-            + "This error occurred due to invalid input."
-            + " Please check your input and try again."
+            f"{msg}\n"
+            + "    : This error occurred due to invalid input.\n"
+            + "      Please check your input and try again."
         )
 
 
@@ -101,11 +99,6 @@ class InvalidArgumentTypeError(UserError):
         )
 
 
-class InvalidRowColumnError(UserError):
-    def __init__(self, msg: Optional[str] = None):
-        super().__init__(f"Invalid, Row Column" + (f": {msg}" if msg else ""))
-
-
 class InvalidHexStrError(UserError):
     def __init__(self, value: str, msg: Optional[str] = None):
         super().__init__(f"Invalid, Hexadecimal({value})" + (f": {msg}" if msg else ""))
@@ -147,4 +140,11 @@ class NotExistBookmarkError(UserError):
     def __init__(self, bookmark: str, msg: Optional[str] = None):
         super().__init__(
             f"Not Exist, Bookmark({bookmark})" + (f": {msg}" if msg else "")
+        )
+
+
+class InvalidAlignError(UserError):
+    def __init__(self, align: int, value: str, msg: Optional[str] = None):
+        super().__init__(
+            f"Invalid, Align({align}) of Value({value})" + (f": {msg}" if msg else "")
         )

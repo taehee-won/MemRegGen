@@ -1,3 +1,6 @@
+from os import mkdir
+from os.path import dirname, exists
+
 from inc.Exceptions import FileWriteError
 
 
@@ -10,6 +13,9 @@ class WriteFile:
         return self._path
 
     def write(self, contents: str) -> None:
+        if not exists(dir := dirname(self._path)):
+            mkdir(dir)
+
         try:
             with open(self._path, "w") as file:
                 file.write(contents)

@@ -34,7 +34,7 @@ class _Kind(Enum):
 class MemDef:
     name: str = "Memory Definition"
 
-    def __init__(self, file: ReadFile, _: MemConfig) -> None:
+    def __init__(self, file: ReadFile, config: MemConfig) -> None:
         self._file = file
 
         self._addresses: List[Address] = []
@@ -63,6 +63,9 @@ class MemDef:
             for row in rows:
                 if row.kind == kind:
                     add(row)
+
+        self._addresses = sorted(self._addresses)
+        self._arrays = sorted(self._arrays)
 
     @property
     def debug_str(self) -> str:
@@ -267,7 +270,7 @@ class _Row:
     @property
     def kind(self) -> _Kind:
         if self._kind is None:
-            raise NotExpectedError("Kind should never be None")
+            raise NotExpectedError("Not Exist, Kind: kind should never be none")
 
         return self._kind
 
@@ -276,6 +279,9 @@ class Address:
     def __init__(self, name: str, address: str) -> None:
         self._name: str = name
         self._address: HexStr = HexStr(address)
+
+    def __lt__(self, other: "Address") -> bool:
+        return self._address.value < other.address.value
 
     @property
     def name(self) -> str:
@@ -289,7 +295,13 @@ class Address:
 class Array:
     def __init__(self, name: str, addresses: List[Address]) -> None:
         self._name = name
-        self._addresses = addresses
+        self._addresses = sorted(addresses)
+
+    def __lt__(self, other: "Array") -> bool:
+        return (
+            self.addresses[self.indexes[0]].address.value
+            < other.addresses[other.indexes[0]].address.value
+        )
 
     @property
     def name(self) -> str:
@@ -301,6 +313,21 @@ class Array:
 
     def extend(self, addresses: List[Address]):
         self.addresses.extend(addresses)
+        self.addresses.sort()
+
+    @property
+    def indexes(self) -> List[int]:
+        return [self._get_index(address.name) for address in self._addresses]
+
+    @staticmethod
+    def _get_index(name: str) -> int:
+        index = name.split("_")[-1]
+        if not index.isdigit():
+            raise NotExpectedError(
+                f"Invalid, Index({index}): array address({name}) should be valid index"
+            )
+
+        return int(index)
 
 
 class Alias:
