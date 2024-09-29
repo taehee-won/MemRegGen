@@ -310,7 +310,7 @@ class Array:
 
     @property
     def indexes(self) -> List[int]:
-        return [self._get_index(address.name) for address in self._addresses]
+        return [self.get_index(address.name) for address in self._addresses]
 
     @property
     def step_shift(self) -> Optional[Tuple[HexStr, int]]:
@@ -320,11 +320,11 @@ class Array:
         if len(self.addresses) == 1:
             return self.addresses[0].address, 0
 
-        start_index = self._get_index(self.addresses[0].name)
+        start_index = self.get_index(self.addresses[0].name)
         start_address = self.addresses[0].address.value
 
         step = (self.addresses[1].address.value - start_address) / (
-            self._get_index(self.addresses[1].name) - start_index
+            self.get_index(self.addresses[1].name) - start_index
         )
 
         if not step.is_integer() or step <= 0:
@@ -338,7 +338,7 @@ class Array:
         base = start_address - (step * start_index)
 
         if any(
-            base != (address.address.value - (step * self._get_index(address.name)))
+            base != (address.address.value - (step * self.get_index(address.name)))
             for address in self.addresses
         ):
             return None
@@ -350,7 +350,7 @@ class Array:
         self.addresses.sort()
 
     @staticmethod
-    def _get_index(name: str) -> int:
+    def get_index(name: str) -> int:
         index = name.split("_")[-1]
         if not index.isdigit():
             raise NotExpectedError(
@@ -363,7 +363,6 @@ class Array:
 class Alias:
     def __init__(self, name: str, alias: Union[Address, Array]) -> None:
         self._name = name
-        self._kind = _Kind.ADDRESS if type(alias) == Address else _Kind.ARRAY
         self._alias = alias
 
     @property

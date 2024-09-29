@@ -6,7 +6,7 @@ from inc import WriteFile, Str, HexStr, NotExpectedError
 
 from src.Mem.MemGen import MemGen
 from src.Mem.MemConfig import MemConfig
-from src.Mem.MemDef import MemDef
+from src.Mem.MemDef import MemDef, Address, Array
 
 
 class MemCHeader(MemGen):
@@ -117,7 +117,7 @@ class MemCHeader(MemGen):
                             "#define",
                             f"{self._name(array.name)}({self._config.array})",
                             f"( {self._address(base)} )",
-                            f"// only item in {self._name(array.name)}S",
+                            f"// ONLY {self._name(array.addresses[0].name)}",
                         ]
                     )
 
@@ -127,12 +127,71 @@ class MemCHeader(MemGen):
                         "#define",
                         f"{self._name(array.name)}({self._config.array})",
                         "",
-                        "// impossible to shift",
+                        "// IMPOSSIBLE",
                     ]
                 )
 
     def _set_alias_rows(self) -> None:
-        self._alias_rows = []
+        self._alias_address_rows = []
+        self._alias_array_num_rows = []
+        self._alias_array_rows = []
+        self._alias_array_step_rows = []
+
+        for alias in self._memdef.aliases:
+            if type(alias.alias) == Address:
+                self._alias_address_rows.append(
+                    [
+                        "#define",
+                        self._name(alias.name),
+                        f"( {self._name(alias.alias.name)} )",
+                        alias.alias.address,
+                    ]
+                )
+
+            elif type(alias.alias) == Array:
+                for address in alias.alias.addresses:
+                    index = Array.get_index(address.name)
+
+                    self._alias_address_rows.append(
+                        [
+                            "#define",
+                            self._name(f"{alias.name}_{index}"),
+                            f"( {self._name(address.name)} )",
+                            address.address,
+                        ]
+                    )
+
+                self._alias_array_num_rows.append(
+                    [
+                        "#define",
+                        f"{self._name(alias.name)}_NUM",
+                        f"( {self._name(alias.alias.name)}_NUM )",
+                    ]
+                )
+
+                self._alias_array_rows.append(
+                    [
+                        "#define",
+                        f"{self._name(alias.name)}S",
+                        f"( {self._name(alias.alias.name)}S )",
+                    ]
+                )
+
+                self._alias_array_step_rows.append(
+                    [
+                        "#define",
+                        f"{self._name(alias.name)}({self._config.array})",
+                        f"( {self._name(alias.alias.name)}({self._config.array}) )",
+                    ]
+                )
+
+            else:
+                raise NotExpectedError(f"Invalid, Alias({alias.name})")
+
+        self._alias_address_rows.sort(key=lambda row: row[3].value)
+
+        for row in self._alias_address_rows:
+            del row[3]
 
     def _set_bookmark_rows(self) -> None:
         self._bookmark_rows = []
@@ -225,6 +284,16 @@ class MemCHeader(MemGen):
 
     def _append_alias_section(self) -> None:
         self._append_section_header("Alias Section")
+
+        for rows in [
+            self._alias_address_rows,
+            self._alias_array_num_rows,
+            self._alias_array_rows,
+            self._alias_array_step_rows,
+        ]:
+            if rows:
+                self._append("")
+                self._append_str(Str.from_rows(rows))
 
     def _append_bookmark_section(self) -> None:
         self._append_section_header("Bookmark Section")
