@@ -23,6 +23,7 @@ class MemCHeader(MemGen):
         self._set_array_rows()
         self._set_alias_rows()
         self._set_bookmark_rows()
+        self._set_address_notes()
 
         self._append_note_header()
         self._append_open_header_guard()
@@ -46,7 +47,13 @@ class MemCHeader(MemGen):
                     "#define",
                     self._name(address.name),
                     address.address,
-                    "",
+                    "//",
+                    "",  # Array
+                    "|",
+                    "",  # Alias
+                    "|",
+                    "",  # Bookmark
+                    "|",
                 ]
             )
 
@@ -57,7 +64,13 @@ class MemCHeader(MemGen):
                         "#define",
                         self._name(address.name),
                         address.address,
-                        f"// {self._name(array.name)}",  # ({self._config.array})
+                        "//",
+                        array.name,  # Array
+                        "|",
+                        "",  # Alias
+                        "|",
+                        "",  # Bookmark
+                        "|",
                     ]
                 )
 
@@ -65,6 +78,39 @@ class MemCHeader(MemGen):
 
         for row in self._address_rows:
             row[2] = self._address(row[2])
+
+    def _set_address_notes(self) -> None:
+        if self._address_rows:
+            self._address_rows.insert(
+                0,
+                [
+                    "",
+                    "",
+                    "",
+                    "//",
+                    "Array",
+                    "|",
+                    "Alias",
+                    "|",
+                    "Bookmark",
+                    "|",
+                ],
+            )
+
+            removed = 0
+            for index in range(4, 9, 2):
+                if all(not row[index - removed] for row in self._address_rows[1:]):
+                    for row in self._address_rows:
+                        del row[index - removed]  # Array, Alias, Bookmark
+                        del row[index - removed]  # |
+
+                    removed += 2
+
+            if removed == 6:
+                del self._address_rows[0]
+
+                for row in self._address_rows:
+                    del row[3]  # //
 
     def _set_array_rows(self) -> None:
         self._array_num_rows = []
@@ -148,6 +194,15 @@ class MemCHeader(MemGen):
                     ]
                 )
 
+                for row in self._address_rows:
+                    if row[1] == self._name(alias.alias.name):
+                        row[6] += (", " if row[6] else "") + alias.name
+
+                        break
+
+                else:
+                    raise NotExpectedError(f"Invalid, Alias({alias.name}): no address")
+
             elif type(alias.alias) == Array:
                 for address in alias.alias.addresses:
                     index = Array.get_index(address.name)
@@ -160,6 +215,17 @@ class MemCHeader(MemGen):
                             address.address,
                         ]
                     )
+
+                    for row in self._address_rows:
+                        if row[1] == self._name(address.name):
+                            row[6] += (", " if row[6] else "") + alias.name
+
+                            break
+
+                    else:
+                        raise NotExpectedError(
+                            f"Invalid, Alias({alias.name}): no address"
+                        )
 
                 self._alias_array_num_rows.append(
                     [
@@ -199,11 +265,7 @@ class MemCHeader(MemGen):
         for bookmark in self._memdef.bookmarks:
             for row in self._address_rows:
                 if row[1] == self._name(bookmark.bookmark):
-                    if len(row) == 4:
-                        row.append(f"// {self._name(bookmark.name)}")
-
-                    else:
-                        row[4] += f", {self._name(bookmark.name)}"
+                    row[8] += (", " if row[8] else "") + self._name(bookmark.name)
 
                     break
 
@@ -268,37 +330,43 @@ class MemCHeader(MemGen):
         self._append_str(Str(section).add_guard("=").add_prefix("// "))
 
     def _append_address_section(self) -> None:
-        self._append_section_header("Address Section")
-
         if self._address_rows:
+            self._append_section_header("Address Section")
+
             self._append("")
             self._append_str(Str.from_rows(self._address_rows))
 
     def _append_array_section(self) -> None:
-        self._append_section_header("Array Section")
+        parts = [self._array_num_rows, self._array_rows, self._array_step_rows]
 
-        for rows in [self._array_num_rows, self._array_rows, self._array_step_rows]:
+        if any(parts):
+            self._append_section_header("Array Section")
+
+        for rows in parts:
             if rows:
                 self._append("")
                 self._append_str(Str.from_rows(rows))
 
     def _append_alias_section(self) -> None:
-        self._append_section_header("Alias Section")
-
-        for rows in [
+        parts = [
             self._alias_address_rows,
             self._alias_array_num_rows,
             self._alias_array_rows,
             self._alias_array_step_rows,
-        ]:
+        ]
+
+        if any(parts):
+            self._append_section_header("Alias Section")
+
+        for rows in parts:
             if rows:
                 self._append("")
                 self._append_str(Str.from_rows(rows))
 
     def _append_bookmark_section(self) -> None:
-        self._append_section_header("Bookmark Section")
-
         if self._bookmark_rows:
+            self._append_section_header("Bookmark Section")
+
             self._append("")
             self._append_str(Str.from_rows(self._bookmark_rows))
 
