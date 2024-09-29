@@ -67,7 +67,69 @@ class MemCHeader(MemGen):
             row[2] = self._address(row[2])
 
     def _set_array_rows(self) -> None:
+        self._array_num_rows = []
         self._array_rows = []
+        self._array_step_rows = []
+
+        for array in self._memdef.arrays:
+            self._array_num_rows.append(
+                [
+                    "#define",
+                    f"{self._name(array.name)}_NUM",
+                    f"( {array.indexes[-1] + 1} )",
+                ]
+            )
+
+        for array in self._memdef.arrays:
+            self._array_rows.append(
+                [
+                    "#define",
+                    f"{self._name(array.name)}S",
+                    "{ "
+                    + ", ".join(
+                        (
+                            self._name(array.addresses[array.indexes.index(index)].name)
+                            if index in array.indexes
+                            else "NULL"
+                        )
+                        for index in range(array.indexes[-1] + 1)
+                    )
+                    + " }",
+                ]
+            )
+
+        for array in self._memdef.arrays:
+            if (step_shift := array.step_shift) is not None:
+                base, shift = step_shift
+
+                if shift:
+                    self._array_step_rows.append(
+                        [
+                            "#define",
+                            f"{self._name(array.name)}({self._config.array})",
+                            f"( {self._address(base)} + ( {self._config.array} << {shift} ) )",
+                        ]
+                    )
+
+                else:
+                    self._array_step_rows.append(
+                        [
+                            "#define",
+                            f"{self._name(array.name)}({self._config.array})",
+                            f"( {self._address(base)} )",
+                            f"// only item in {self._name(array.name)}S",
+                        ]
+                    )
+
+            else:
+                self._array_step_rows.append(
+                    [
+                        "#define",
+                        f"{self._name(array.name)}({self._config.array})",
+                        "",
+                        "// impossible to shift",
+                    ]
+                )
 
     def _set_alias_rows(self) -> None:
         self._alias_rows = []
@@ -108,6 +170,9 @@ class MemCHeader(MemGen):
 
         self._bookmark_rows.sort(key=bookmark_index)
 
+        for bookmark_row in self._bookmark_rows:
+            bookmark_row[2] = f"( {bookmark_row[2]} )"
+
     def _name(self, name: str) -> str:
         return f"{self._config.prefix}{name}{self._config.postfix}"
 
@@ -146,11 +211,17 @@ class MemCHeader(MemGen):
     def _append_address_section(self) -> None:
         self._append_section_header("Address Section")
 
-        self._append("")
-        self._append_str(Str.from_rows(self._address_rows))
+        if self._address_rows:
+            self._append("")
+            self._append_str(Str.from_rows(self._address_rows))
 
     def _append_array_section(self) -> None:
         self._append_section_header("Array Section")
+
+        for rows in [self._array_num_rows, self._array_rows, self._array_step_rows]:
+            if rows:
+                self._append("")
+                self._append_str(Str.from_rows(rows))
 
     def _append_alias_section(self) -> None:
         self._append_section_header("Alias Section")
@@ -158,8 +229,9 @@ class MemCHeader(MemGen):
     def _append_bookmark_section(self) -> None:
         self._append_section_header("Bookmark Section")
 
-        self._append("")
-        self._append_str(Str.from_rows(self._bookmark_rows))
+        if self._bookmark_rows:
+            self._append("")
+            self._append_str(Str.from_rows(self._bookmark_rows))
 
     def _append_close_header_guard(self) -> None:
         guard = self._config.guard + "_H"

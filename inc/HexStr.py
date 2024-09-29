@@ -3,12 +3,10 @@ from inc.Exceptions import InvalidHexStrError, InvalidAlignError
 
 class HexStr(str):
     def __new__(cls, value: str):
-        value = value.lower()
-
         if not (
             3 <= len(value)
             and value.lower().startswith("0x")
-            and all(c in "0123456789abcdef" for c in value[2:])
+            and all(c in "0123456789abcdefABCDEF" for c in value[2:])
         ):
             raise InvalidHexStrError(value)
 
@@ -16,7 +14,7 @@ class HexStr(str):
 
     @classmethod
     def from_int(cls, value: int) -> "HexStr":
-        return HexStr(f"0x{value}:X")
+        return HexStr(f"0x{value:X}")
 
     @property
     def value(self) -> int:

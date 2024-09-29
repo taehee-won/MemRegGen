@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Optional, Tuple
 from enum import Enum
 from re import match
 
@@ -34,7 +34,7 @@ class _Kind(Enum):
 class MemDef:
     name: str = "Memory Definition"
 
-    def __init__(self, file: ReadFile, config: MemConfig) -> None:
+    def __init__(self, file: ReadFile, _: MemConfig) -> None:
         self._file = file
 
         self._addresses: List[Address] = []
@@ -298,10 +298,7 @@ class Array:
         self._addresses = sorted(addresses)
 
     def __lt__(self, other: "Array") -> bool:
-        return (
-            self.addresses[self.indexes[0]].address.value
-            < other.addresses[other.indexes[0]].address.value
-        )
+        return self.addresses[0].address.value < other.addresses[0].address.value
 
     @property
     def name(self) -> str:
@@ -311,13 +308,46 @@ class Array:
     def addresses(self) -> List[Address]:
         return self._addresses
 
-    def extend(self, addresses: List[Address]):
-        self.addresses.extend(addresses)
-        self.addresses.sort()
-
     @property
     def indexes(self) -> List[int]:
         return [self._get_index(address.name) for address in self._addresses]
+
+    @property
+    def step_shift(self) -> Optional[Tuple[HexStr, int]]:
+        if len(self.addresses) == 0:
+            return None
+
+        if len(self.addresses) == 1:
+            return self.addresses[0].address, 0
+
+        start_index = self._get_index(self.addresses[0].name)
+        start_address = self.addresses[0].address.value
+
+        step = (self.addresses[1].address.value - start_address) / (
+            self._get_index(self.addresses[1].name) - start_index
+        )
+
+        if not step.is_integer() or step <= 0:
+            return None
+
+        step = int(step)
+
+        if (step & (step - 1)) != 0:
+            return None
+
+        base = start_address - (step * start_index)
+
+        if any(
+            base != (address.address.value - (step * self._get_index(address.name)))
+            for address in self.addresses
+        ):
+            return None
+
+        return HexStr.from_int(base), step.bit_length()
+
+    def extend(self, addresses: List[Address]):
+        self.addresses.extend(addresses)
+        self.addresses.sort()
 
     @staticmethod
     def _get_index(name: str) -> int:
