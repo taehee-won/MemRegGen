@@ -8,7 +8,7 @@ from src.Mem import MemGen, MemCHeader, MemVerilogHeader, MemDoc
 
 
 name: Final[str] = "Memory Generator"
-version: Final[str] = "v0.1"
+version: Final[str] = "v1.0"
 
 
 _MemGens: Final[Dict[str, Type[MemGen]]] = {
@@ -63,5 +63,14 @@ if __name__ == "__main__":
     if config.debug:
         print(memdef.debug_str)
 
+    print(f"MemDef: {args.MemDef}")
+    print(f"MemGen: {args.MemGen}")
+
     memgen = _MemGens[get_extension(args.MemGen)](memdef, config)
     memgen.generate(WriteFile(args.MemGen))
+
+    print(
+        Str(f"{_MemGens[get_extension(args.MemGen)].name} Generated")
+        .add_guard("=")
+        .contents
+    )
