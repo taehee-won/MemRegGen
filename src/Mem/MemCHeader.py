@@ -145,15 +145,24 @@ class MemCHeader(MemGen):
             )
 
         for array in self._memdef.arrays:
-            if (step_shift := array.step_shift) is not None:
-                base, shift = step_shift
+            if (values := array.step) is not None:
+                base, step, shift = values
 
-                if shift:
+                if shift is not None:
                     self._array_step_rows.append(
                         [
                             "#define",
                             f"{self._name(array.name)}({self._config.array})",
                             f"( {self._address(base)} + ( {self._config.array} << {shift} ) )",
+                        ]
+                    )
+
+                elif step is not None:
+                    self._array_step_rows.append(
+                        [
+                            "#define",
+                            f"{self._name(array.name)}({self._config.array})",
+                            f"( {self._address(base)} + ( {self._config.array} * {step} ) )",
                         ]
                     )
 

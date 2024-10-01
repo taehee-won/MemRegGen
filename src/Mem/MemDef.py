@@ -313,12 +313,12 @@ class Array:
         return [self.get_index(address.name) for address in self._addresses]
 
     @property
-    def step_shift(self) -> Optional[Tuple[HexStr, int]]:
+    def step(self) -> Optional[Tuple[HexStr, Optional[HexStr], Optional[int]]]:
         if len(self.addresses) == 0:
             return None
 
         if len(self.addresses) == 1:
-            return self.addresses[0].address, 0
+            return self.addresses[0].address, None, None
 
         start_index = self.get_index(self.addresses[0].name)
         start_address = self.addresses[0].address.value
@@ -331,10 +331,6 @@ class Array:
             return None
 
         step = int(step)
-
-        if (step & (step - 1)) != 0:
-            return None
-
         base = start_address - (step * start_index)
 
         if any(
@@ -343,7 +339,11 @@ class Array:
         ):
             return None
 
-        return HexStr.from_int(base), step.bit_length()
+        return (
+            (HexStr.from_int(base), HexStr.from_int(step), step.bit_length())
+            if (step & (step - 1)) == 0
+            else (HexStr.from_int(base), HexStr.from_int(step), None)
+        )
 
     def extend(self, addresses: List[Address]):
         self.addresses.extend(addresses)
