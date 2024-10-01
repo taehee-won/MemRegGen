@@ -186,6 +186,7 @@ class MemDef:
             [address.name for address in self._addresses]
             + [array.name for array in self._arrays]
             + [address.name for array in self._arrays for address in array.addresses]
+            + [alias.name for alias in self._aliases]
         ):
             raise DuplicatedNameError(row.name)
 
@@ -207,6 +208,15 @@ class MemDef:
         raise NotExistAliasError(row.value)
 
     def _bookmark(self, row: "_Row") -> None:
+        if row.name in (
+            [address.name for address in self._addresses]
+            + [array.name for array in self._arrays]
+            + [address.name for array in self._arrays for address in array.addresses]
+            + [alias.name for alias in self._aliases]
+            + [bookmark.name for bookmark in self._bookmarks]
+        ):
+            raise DuplicatedNameError(row.name)
+
         for address in self._addresses:
             if row.value == address.name:
                 self._bookmarks.append(Bookmark(row.name, row.value))
