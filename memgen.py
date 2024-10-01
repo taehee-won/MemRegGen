@@ -22,10 +22,11 @@ if __name__ == "__main__":
     parser = ArgumentParser()
 
     # fmt: off
-    parser.add_argument("MemDef",  type=str, help="MemDef file path")
+    parser.add_argument("MemDef", type=str, help="MemDef file path")
     parser.add_argument("MemGen", type=str, help="MemGen file path")
 
-    parser.add_argument("-g",    "--guard",   type=str,  help="header guard") 
+    parser.add_argument("-g",    "--guard",   type=str,  help="header guard")
+    parser.add_argument("-t",    "--type",    type=str,  help="memory address type")
     parser.add_argument("-pre",  "--prefix",  type=str,  help="prefix for definition names")
     parser.add_argument("-post", "--postfix", type=str,  help="postfix for definition names")
     parser.add_argument("-arr",  "--array",   type=str,  help="name for array")

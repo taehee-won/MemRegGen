@@ -295,7 +295,9 @@ class MemCHeader(MemGen):
             bookmark_row[2] = f"( {bookmark_row[2]} )"
 
     def _name(self, name: str) -> str:
-        return f"{self._config.prefix}{name}{self._config.postfix}"
+        return f"{self._config.prefix}{name}{self._config.postfix}" + (
+            f"_{self._config.type}" if self._config.type else ""
+        )
 
     def _address(self, address: HexStr) -> str:
         prefix = "UL(" if self._config.bits == 64 else ""
