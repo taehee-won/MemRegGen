@@ -8,7 +8,7 @@ from src.Mem import MemGen, MemCHeader, MemVerilogHeader, MemDoc
 
 
 name: Final[str] = "Memory Generator"
-version: Final[str] = "v2.1"
+version: Final[str] = "v2.2"
 
 
 _MemGens: Final[Dict[str, Type[MemGen]]] = {
