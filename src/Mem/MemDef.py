@@ -217,20 +217,28 @@ class MemDef:
         ):
             raise DuplicatedNameError(row.name)
 
-        for address in self._addresses:
-            if row.value == address.name:
-                self._bookmarks.append(Bookmark(row.name, row.value))
-                return
+        tokens = row.define.split(",")
+        if len(tokens) == 1:
+            for address in self._addresses:
 
-        for array in self._arrays:
-            if row.value == array.name:
-                self._bookmarks.append(Bookmark(row.name, row.value))
-                return
-
-            for address in array.addresses:
                 if row.value == address.name:
                     self._bookmarks.append(Bookmark(row.name, row.value))
                     return
+
+        elif len(tokens) == 2:
+            index = tokens[1]
+            for array in self._arrays:
+                if row.value == array.name:
+                    for address in array.addresses:
+                        if (target := f"{row.value}_{index}") == address.name:
+                            self._bookmarks.append(Bookmark(row.name, target))
+                            return
+
+        else:
+            raise InvalidDefineError(
+                row.define,
+                f"invalid number of tokens in define" + f": expected 4",
+            )
 
         raise NotExistBookmarkError(row.value)
 
