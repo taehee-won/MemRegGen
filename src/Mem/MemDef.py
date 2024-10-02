@@ -143,15 +143,22 @@ class MemDef:
             raise DuplicatedNameError(row.name)
 
         tokens = row.define.split(",")
-        if len(tokens) != 4:
+        if len(tokens) != 3 and len(tokens) != 4:
             raise InvalidDefineError(
                 row.define,
-                f"invalid number of tokens in define" + f": expected 4",
+                f"invalid number of tokens in define" + f": expected 3 or 4",
             )
 
         start = IntStr(tokens[1])
         count = IntStr(tokens[2])
-        step = HexStr(tokens[3])
+        step = HexStr(tokens[3]) if len(tokens) == 4 else HexStr.from_int(0)
+
+        if 1 < count.value and step.value == 0:
+            raise InvalidDefineError(
+                row.define,
+                f"invalid count and step combination"
+                + f": step is zero, but count({count}) is greater than 1",
+            )
 
         address = HexStr(row.value)
         array_addresses = [
@@ -237,7 +244,8 @@ class MemDef:
         else:
             raise InvalidDefineError(
                 row.define,
-                f"invalid number of tokens in define" + f": expected 4",
+                f"invalid number of tokens in define"
+                + f": expected 1(address) or 2(array)",
             )
 
         raise NotExistBookmarkError(row.value)
