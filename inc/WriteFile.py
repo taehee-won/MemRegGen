@@ -13,7 +13,7 @@ class WriteFile:
         return self._path
 
     def write(self, contents: str) -> None:
-        if not exists(dir := dirname(self._path)):
+        if (dir := dirname(self._path)) and not exists(dir):
             mkdir(dir)
 
         try:
