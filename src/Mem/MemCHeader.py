@@ -1,5 +1,3 @@
-from typing import List
-
 from memgen import name, version
 
 from inc import WriteFile, Str, HexStr, NotExpectedError
@@ -23,7 +21,10 @@ class MemCHeader(MemGen):
         self._set_array_rows()
         self._set_alias_rows()
         self._set_bookmark_rows()
-        self._set_address_notes()
+        self._set_address_row_header()
+
+        if not self._config.annotation:
+            self._remove_address_annotation()
 
         self._append_note_header()
         self._append_open_header_guard()
@@ -79,7 +80,7 @@ class MemCHeader(MemGen):
         for row in self._address_rows:
             row[2] = self._address(row[2])
 
-    def _set_address_notes(self) -> None:
+    def _set_address_row_header(self) -> None:
         if self._address_rows:
             self._address_rows.insert(
                 0,
@@ -111,6 +112,13 @@ class MemCHeader(MemGen):
 
                 for row in self._address_rows:
                     del row[3]  # //
+
+    def _remove_address_annotation(self) -> None:
+        del self._address_rows[0]
+
+        for row in self._address_rows:
+            for _ in range(3, len(row)):
+                del row[3]
 
     def _set_array_rows(self) -> None:
         self._array_num_rows = []
