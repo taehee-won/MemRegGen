@@ -12,11 +12,12 @@ from inc import Str
 class MemConfig:
     # fmt: off
     _rules: Final[Dict[str, Tuple[Type, Optional[bool], Optional[str]]]] = {
-        "guard":      (str,  False, "upper"),
-        "type":       (str,  True,  "upper"),
+        "address":    (str,  False, "upper"),
+        "plural":     (str,  False, "upper"),
+        "array":      (str,  False, "lower"),
         "prefix":     (str,  True,  "upper"),
         "postfix":    (str,  True,  "upper"),
-        "array":      (str,  False, "lower"),
+        "guard":      (str,  False, "upper"),
         "bits":       (int,  False, None),
         "align":      (int,  False, None),
         "annotation": (bool, None,  None),
@@ -61,11 +62,12 @@ class MemConfig:
             )
 
     def _set_args(self, args: Namespace) -> None:
-        self._guard: str = args.guard
+        self._address: str = args.address
+        self._plural: str = args.plural
+        self._array: str = args.array
         self._prefix: str = args.prefix
         self._postfix: str = args.postfix
-        self._type: str = args.type
-        self._array: str = args.array
+        self._guard: str = args.guard
         self._bits: int = args.bits
         self._align: int = args.align
         self._annotation: bool = args.annotation
@@ -82,15 +84,20 @@ class MemConfig:
                 [
                     [name, str(getattr(self, name))]
                     for name in [
-                        "guard",
+                        "address",
+                        "plural",
+                        "array",
                         "prefix",
                         "postfix",
-                        "array",
+                        "guard",
                         "bits",
                         "align",
                         "annotation",
                         "debug",
                     ]
+                    if not (
+                        isinstance(getattr(self, name), str) and not getattr(self, name)
+                    )
                 ],
                 ": ",
             )
@@ -101,8 +108,16 @@ class MemConfig:
         )
 
     @property
-    def guard(self) -> str:
-        return self._guard
+    def address(self) -> str:
+        return self._address
+
+    @property
+    def plural(self) -> str:
+        return self._plural
+
+    @property
+    def array(self) -> str:
+        return self._array
 
     @property
     def prefix(self) -> str:
@@ -113,12 +128,8 @@ class MemConfig:
         return self._postfix
 
     @property
-    def type(self) -> str:
-        return self._type
-
-    @property
-    def array(self) -> str:
-        return self._array
+    def guard(self) -> str:
+        return self._guard
 
     @property
     def bits(self) -> int:

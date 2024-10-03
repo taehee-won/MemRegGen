@@ -1,3 +1,4 @@
+from typing import List
 from memgen import name, version
 
 from inc import WriteFile, Str, HexStr, NotExpectedError
@@ -129,7 +130,7 @@ class MemCHeader(MemGen):
             self._array_num_rows.append(
                 [
                     "#define",
-                    f"{self._name(array.name, include_type=False)}_{self._config.array.upper()}_NUM",
+                    self._name(array.name, [self._config.array.upper(), "NUM"]),
                     f"( {array.indexes[-1] + 1} )",
                 ]
             )
@@ -138,7 +139,7 @@ class MemCHeader(MemGen):
             self._array_rows.append(
                 [
                     "#define",
-                    f"{self._name(array.name)}S",
+                    f"{self._name(array.name)}{self._config.plural}",
                     "{ "
                     + ", ".join(
                         (
@@ -247,16 +248,16 @@ class MemCHeader(MemGen):
                 self._alias_array_num_rows.append(
                     [
                         "#define",
-                        f"{self._name(alias.name, include_type=False)}_{self._config.array.upper()}_NUM",
-                        f"( {self._name(alias.alias.name, include_type=False)}_{self._config.array.upper()}_NUM )",
+                        self._name(alias.name, [self._config.array.upper(), "NUM"]),
+                        f"( {self._name(alias.alias.name, [self._config.array.upper(), 'NUM'])} )",
                     ]
                 )
 
                 self._alias_array_rows.append(
                     [
                         "#define",
-                        f"{self._name(alias.name)}S",
-                        f"( {self._name(alias.alias.name)}S )",
+                        f"{self._name(alias.name)}{self._config.plural}",
+                        f"( {self._name(alias.alias.name)}{self._config.plural} )",
                     ]
                 )
 
@@ -311,10 +312,16 @@ class MemCHeader(MemGen):
         for bookmark_row in self._bookmark_rows:
             bookmark_row[2] = f"( {bookmark_row[2]} )"
 
-    def _name(self, name: str, include_type: bool = True) -> str:
-        return f"{self._config.prefix}{name}{self._config.postfix}" + (
-            f"_{self._config.type}" if include_type and self._config.type else ""
-        )
+    def _name(self, name: str, tails: List[str] = []) -> str:
+        if not tails:
+            tails.append(self._config.address)
+
+        name = f"{self._config.prefix}{name}{self._config.postfix}"
+
+        for tail in tails:
+            name += f"_{tail}"
+
+        return name
 
     def _address(self, address: HexStr) -> str:
         prefix = "UL("  # if self._config.bits == 64 else ""

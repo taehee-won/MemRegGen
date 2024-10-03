@@ -8,7 +8,7 @@ from src.Mem import MemGen, MemCHeader, MemVerilogHeader, MemDoc
 
 
 name: Final[str] = "Memory Generator"
-version: Final[str] = "v2.2"
+version: Final[str] = "v3.0"
 
 
 _MemGens: Final[Dict[str, Type[MemGen]]] = {
@@ -22,19 +22,21 @@ if __name__ == "__main__":
     parser = ArgumentParser()
 
     # fmt: off
-    parser.add_argument("MemDef", type=str,  help="MemDef file path")
-    parser.add_argument("MemGen", type=str,  help="MemGen file path")
+    parser.add_argument("MemDef", type=str, help="MemDef file path")
+    parser.add_argument("MemGen", type=str, help="MemGen file path")
 
-    parser.add_argument("-g",    "--guard",                 type=str,  help="header guard")
-    parser.add_argument("-t",    "--type",    default="",   type=str,  help="memory address type")
-    parser.add_argument("-pre",  "--prefix",  default="",   type=str,  help="prefix for definition names")
-    parser.add_argument("-post", "--postfix", default="",   type=str,  help="postfix for definition names")
-    parser.add_argument("-arr",  "--array",   default="ch", type=str,  help="name for array")
-    parser.add_argument("-b",    "--bits",    default=64,   type=int,  help="bits for architecture",      choices=[32, 64])
-    parser.add_argument("-l",    "--align",                 type=int,  help="align length for addresses", choices=list(range(1, 17)))
+    parser.add_argument("-a",    "--address", default="BASE", type=str, help="memory address name")
+    parser.add_argument("-p",    "--plural",  default="S",    type=str, help="plural ending for address array")
+    parser.add_argument("-arr",  "--array",   default="ch",   type=str, help="address array name")
+    parser.add_argument("-pre",  "--prefix",  default="",     type=str, help="prefix for names")
+    parser.add_argument("-post", "--postfix", default="",     type=str, help="postfix for names")
 
-    parser.add_argument("--no-annotation", default=True,  help="disable annotation", action="store_false", dest="annotation")
-    parser.add_argument("-d", "--debug",   default=False, help="enable debug msgs",  action="store_true",  dest="debug")
+    parser.add_argument("-g", "--guard",             type=str, help="header guard")
+    parser.add_argument("-b", "--bits",  default=64, type=int, help="architecture bits",      choices=[32, 64])
+    parser.add_argument("-l", "--align",             type=int, help="addresses align length", choices=list(range(1, 17)))
+
+    parser.add_argument("--no-annotation", default=True,  help="disable annotation",    action="store_false", dest="annotation")
+    parser.add_argument("-d", "--debug",   default=False, help="enable debug messages", action="store_true",  dest="debug")
     # fmt: on
 
     args = parser.parse_args()
@@ -63,8 +65,7 @@ if __name__ == "__main__":
         )
 
     config = MemConfig(args)
-    if config.debug:
-        print(config.debug_str)
+    print(config.debug_str)
 
     memdef = MemDef(ReadFile(args.MemDef), config)
     if config.debug:
