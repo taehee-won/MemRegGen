@@ -44,13 +44,17 @@ class MemDef:
 
         keys, rows = file.csv_contents
 
-        for row in rows:
-            if not all(cell for cell in row):
-                raise InvalidCSVRowError(row, "all cell should be exist")
-
         for key in _Key:
             if key.value not in keys:
                 raise NotExistCSVKeyError(key.value)
+
+        for row in rows:
+            if not all(row[keys.index(key.value)] for key in _Key):
+                raise InvalidCSVRowError(
+                    row,
+                    "all cell of defined keys should be exist"
+                    + f": keys({', '.join(key.value for key in _Key)})",
+                )
 
         rows = [_Row(*[row[keys.index(key.value)] for key in _Key]) for row in rows]
 
@@ -258,17 +262,16 @@ class _Row:
         ):
             raise InvalidNameError(name)
 
-        if (
-            kind := next(
-                (
-                    kind
-                    for kind in _Kind
-                    if (defined_kind := define.split(",")[0])
-                    in kind.value.strip().split(",")
-                ),
-                None,
-            )
-        ) is None:
+        kind = next(
+            (
+                kind
+                for kind in _Kind
+                if (defined_kind := define.split(",")[0])
+                in kind.value.strip().split(",")
+            ),
+            None,
+        )
+        if kind is None:
             raise InvalidKindError(
                 defined_kind,
                 f"name({name}), value({value}), define({define})"
@@ -279,6 +282,7 @@ class _Row:
         self._name = name
         self._value = value
         self._define = define
+
         self._kind = kind
 
     @property
