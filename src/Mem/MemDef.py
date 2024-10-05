@@ -251,7 +251,9 @@ class MemDef:
                 if row.value == array.name:
                     for address in array.addresses:
                         if (target := f"{row.value}_{index}") == address.name:
-                            self._bookmarks.append(Bookmark(row.name, target))
+                            self._bookmarks.append(
+                                Bookmark(row.name, target, int(index))
+                            )
                             return
 
         else:
@@ -414,9 +416,10 @@ class Alias:
 
 
 class Bookmark:
-    def __init__(self, name: str, bookmark: str) -> None:
+    def __init__(self, name: str, bookmark: str, index: Optional[int] = None) -> None:
         self._name = name
         self._bookmark = bookmark
+        self._index = index
 
     @property
     def name(self) -> str:
@@ -425,3 +428,7 @@ class Bookmark:
     @property
     def bookmark(self) -> str:
         return self._bookmark
+
+    @property
+    def index(self) -> Optional[int]:
+        return self._index

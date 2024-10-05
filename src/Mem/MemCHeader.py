@@ -131,7 +131,8 @@ class MemCHeader(MemGen):
                 [
                     "#define",
                     self._name(
-                        array.name, [self._config.array.upper(), self._config.number]
+                        array.name,
+                        tails=[self._config.array.upper(), self._config.number],
                     ),
                     f"( {array.indexes[-1] + 1} )",
                 ]
@@ -252,9 +253,9 @@ class MemCHeader(MemGen):
                         "#define",
                         self._name(
                             alias.name,
-                            [self._config.array.upper(), self._config.number],
+                            tails=[self._config.array.upper(), self._config.number],
                         ),
-                        f"( {self._name(alias.alias.name, [self._config.array.upper(), self._config.number])} )",
+                        f"( {self._name(alias.alias.name, tails=[self._config.array.upper(), self._config.number])} )",
                     ]
                 )
 
@@ -284,6 +285,7 @@ class MemCHeader(MemGen):
 
     def _set_bookmark_rows(self) -> None:
         self._bookmark_rows = []
+        self._bookmark_index_rows = []
 
         for bookmark in self._memdef.bookmarks:
             for row in self._address_rows:
@@ -305,6 +307,16 @@ class MemCHeader(MemGen):
                 ]
             )
 
+            if (index := bookmark.index) is not None:
+                self._bookmark_index_rows.append(
+                    [
+                        "#define",
+                        self._name(bookmark.name, tails=[self._config.array.upper()]),
+                        self._name(bookmark.bookmark),
+                        f"( {index} )",
+                    ]
+                )
+
         def bookmark_index(bookmark_row):
             for index, row in enumerate(self._address_rows):
                 if row[1] == bookmark_row[2]:
@@ -313,9 +325,13 @@ class MemCHeader(MemGen):
             raise NotExpectedError(f"Not Exist, Bookmark({bookmark_row[2]})")
 
         self._bookmark_rows.sort(key=bookmark_index)
+        self._bookmark_index_rows.sort(key=bookmark_index)
 
         for bookmark_row in self._bookmark_rows:
             bookmark_row[2] = f"( {bookmark_row[2]} )"
+
+        for bookmark_index_row in self._bookmark_index_rows:
+            del bookmark_index_row[2]
 
     def _name(self, name: str, tails: List[str] = []) -> str:
         if not tails:
@@ -395,11 +411,18 @@ class MemCHeader(MemGen):
                 self._append_str(Str.from_rows(rows))
 
     def _append_bookmark_section(self) -> None:
-        if self._bookmark_rows:
+        parts = [
+            self._bookmark_rows,
+            self._bookmark_index_rows,
+        ]
+
+        if any(parts):
             self._append_section_header("Bookmark Section")
 
-            self._append("")
-            self._append_str(Str.from_rows(self._bookmark_rows))
+        for rows in parts:
+            if rows:
+                self._append("")
+                self._append_str(Str.from_rows(rows))
 
     def _append_close_header_guard(self) -> None:
         guard = self._config.guard + "_H"
