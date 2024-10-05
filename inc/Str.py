@@ -33,6 +33,9 @@ class Str:
 
         return cls("\n".join(aligned_rows))
 
+    def print(self) -> None:
+        print(self._contents)
+
     def append(self, other: "Str") -> "Str":
         self._contents += "\n" + other._contents
 

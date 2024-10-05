@@ -130,7 +130,9 @@ class MemCHeader(MemGen):
             self._array_num_rows.append(
                 [
                     "#define",
-                    self._name(array.name, [self._config.array.upper(), "NUM"]),
+                    self._name(
+                        array.name, [self._config.array.upper(), self._config.number]
+                    ),
                     f"( {array.indexes[-1] + 1} )",
                 ]
             )
@@ -248,8 +250,11 @@ class MemCHeader(MemGen):
                 self._alias_array_num_rows.append(
                     [
                         "#define",
-                        self._name(alias.name, [self._config.array.upper(), "NUM"]),
-                        f"( {self._name(alias.alias.name, [self._config.array.upper(), 'NUM'])} )",
+                        self._name(
+                            alias.name,
+                            [self._config.array.upper(), self._config.number],
+                        ),
+                        f"( {self._name(alias.alias.name, [self._config.array.upper(), self._config.number])} )",
                     ]
                 )
 
@@ -314,7 +319,7 @@ class MemCHeader(MemGen):
 
     def _name(self, name: str, tails: List[str] = []) -> str:
         if not tails:
-            tails.append(self._config.address)
+            tails.append(self._config.memory)
 
         name = f"{self._config.prefix}{name}{self._config.postfix}"
 
@@ -324,8 +329,8 @@ class MemCHeader(MemGen):
         return name
 
     def _address(self, address: HexStr) -> str:
-        prefix = "UL("  # if self._config.bits == 64 else ""
-        postfix = ")"  # if self._config.bits == 64 else ""
+        prefix = "UL("
+        postfix = ")"
 
         return f"{prefix}{address.get_aligned(self._config.align)}{postfix}"
 
@@ -333,7 +338,7 @@ class MemCHeader(MemGen):
         self._contents += c + "\n"
 
     def _append_str(self, s: Str) -> None:
-        self._append(s.contents)
+        self._append(str(s))
 
     def _append_note_header(self) -> None:
         self._append(f"// Do not edit!")

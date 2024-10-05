@@ -12,14 +12,15 @@ from inc import Str
 class MemConfig:
     # fmt: off
     _rules: Final[Dict[str, Tuple[Type, Optional[bool], Optional[str]]]] = {
-        "address":    (str,  False, "upper"),
+        "memory":     (str,  False, "upper"),
+        "bits":       (int,  False, None),
+        "align":      (int,  False, None),
         "plural":     (str,  False, "upper"),
         "array":      (str,  False, "lower"),
+        "number":     (str,  False, "upper"),
         "prefix":     (str,  True,  "upper"),
         "postfix":    (str,  True,  "upper"),
         "guard":      (str,  False, "upper"),
-        "bits":       (int,  False, None),
-        "align":      (int,  False, None),
         "annotation": (bool, None,  None),
         "debug":      (bool, None,  None),
     }
@@ -62,14 +63,15 @@ class MemConfig:
             )
 
     def _set_args(self, args: Namespace) -> None:
-        self._address: str = args.address
+        self._memory: str = args.memory
+        self._bits: int = args.bits
+        self._align: int = args.align
         self._plural: str = args.plural
         self._array: str = args.array
+        self._number: str = args.number
         self._prefix: str = args.prefix
         self._postfix: str = args.postfix
         self._guard: str = args.guard
-        self._bits: int = args.bits
-        self._align: int = args.align
         self._annotation: bool = args.annotation
         self._debug: bool = args.debug
 
@@ -77,39 +79,41 @@ class MemConfig:
         self._invalid_args(args)
         self._set_args(args)
 
-    @property
-    def debug_str(self) -> str:
-        return (
-            Str.from_rows(
-                [
-                    [name, str(getattr(self, name))]
-                    for name in [
-                        "address",
-                        "plural",
-                        "array",
-                        "prefix",
-                        "postfix",
-                        "guard",
-                        "bits",
-                        "align",
-                        "annotation",
-                        "debug",
-                    ]
-                    if not (
-                        isinstance(getattr(self, name), str) and not getattr(self, name)
-                    )
-                ],
-                ": ",
-            )
-            .insert_guard("-")
-            .insert_line("MemConfig")
-            .add_guard("=")
-            .contents
-        )
+    def __str__(self) -> str:
+        return Str.from_rows(
+            [
+                [name, str(getattr(self, name))]
+                for name in [
+                    "memory",
+                    "bits",
+                    "align",
+                    "plural",
+                    "array",
+                    "number",
+                    "prefix",
+                    "postfix",
+                    "guard",
+                    "annotation",
+                    "debug",
+                ]
+                if not (
+                    isinstance(getattr(self, name), str) and not getattr(self, name)
+                )
+            ],
+            separator=" : ",
+        ).contents
 
     @property
-    def address(self) -> str:
-        return self._address
+    def memory(self) -> str:
+        return self._memory
+
+    @property
+    def bits(self) -> int:
+        return self._bits
+
+    @property
+    def align(self) -> int:
+        return self._align
 
     @property
     def plural(self) -> str:
@@ -118,6 +122,10 @@ class MemConfig:
     @property
     def array(self) -> str:
         return self._array
+
+    @property
+    def number(self) -> str:
+        return self._number
 
     @property
     def prefix(self) -> str:
@@ -130,14 +138,6 @@ class MemConfig:
     @property
     def guard(self) -> str:
         return self._guard
-
-    @property
-    def bits(self) -> int:
-        return self._bits
-
-    @property
-    def align(self) -> int:
-        return self._align
 
     @property
     def annotation(self) -> bool:

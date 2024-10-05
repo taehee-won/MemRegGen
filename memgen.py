@@ -8,7 +8,7 @@ from src.Mem import MemGen, MemCHeader, MemVerilogHeader, MemDoc
 
 
 name: Final[str] = "Memory Generator"
-version: Final[str] = "v3.0"
+version: Final[str] = "v4.0"
 
 
 _MemGens: Final[Dict[str, Type[MemGen]]] = {
@@ -25,18 +25,20 @@ if __name__ == "__main__":
     parser.add_argument("MemDef", type=str, help="MemDef file path")
     parser.add_argument("MemGen", type=str, help="MemGen file path")
 
-    parser.add_argument("-a",    "--address", default="BASE", type=str, help="memory address name")
-    parser.add_argument("-p",    "--plural",  default="S",    type=str, help="plural ending for address array")
-    parser.add_argument("-arr",  "--array",   default="ch",   type=str, help="address array name")
-    parser.add_argument("-pre",  "--prefix",  default="",     type=str, help="prefix for names")
-    parser.add_argument("-post", "--postfix", default="",     type=str, help="postfix for names")
+    parser.add_argument("-m", "--memory", default="MEM", type=str, help="memory address name")
 
-    parser.add_argument("-g", "--guard",             type=str, help="header guard")
     parser.add_argument("-b", "--bits",  default=64, type=int, help="architecture bits",      choices=[32, 64])
     parser.add_argument("-l", "--align",             type=int, help="addresses align length", choices=list(range(1, 17)))
 
-    parser.add_argument("--no-annotation", default=True,  help="disable annotation",    action="store_false", dest="annotation")
-    parser.add_argument("-d", "--debug",   default=False, help="enable debug messages", action="store_true",  dest="debug")
+    parser.add_argument("--plural",        default="S",   type=str, help="plural ending for address array")
+    parser.add_argument("--array",         default="ch",  type=str, help="address array name")
+    parser.add_argument("--number",        default="NUM", type=str, help="number name")
+    parser.add_argument("--prefix",        default="",    type=str, help="prefix for names")
+    parser.add_argument("--postfix",       default="",    type=str, help="postfix for names")
+    parser.add_argument("--guard",                        type=str, help="header guard")
+    parser.add_argument("--no-annotation", default=True,            help="disable annotation", action="store_false", dest="annotation")
+
+    parser.add_argument("-d", "--debug", default=False, help="enable debug messages", action="store_true", dest="debug")
     # fmt: on
 
     args = parser.parse_args()
@@ -47,7 +49,7 @@ if __name__ == "__main__":
     if args.align is None:
         args.align = 16 if getattr(args, "bits") == 64 else 8
 
-    print(Str(f"{name} {version}").add_guard("*").contents)
+    Str(f"{name} {version}").add_guard("=").print()
 
     get_extension = lambda path: splitext(path)[1][1:]
 
@@ -65,20 +67,17 @@ if __name__ == "__main__":
         )
 
     config = MemConfig(args)
-    print(config.debug_str)
+    Str(str(config)).insert_guard(".").insert_line("Config").add_guard("-").print()
 
     memdef = MemDef(ReadFile(args.MemDef), config)
     if config.debug:
-        print(memdef.debug_str)
+        memdef.print()
 
-    print(f"MemDef: {args.MemDef}")
-    print(f"MemGen: {args.MemGen}")
+    Str.from_rows(
+        [["MemDef", args.MemDef], ["MemGen", args.MemGen]], separator=" : "
+    ).insert_guard(".").insert_line("File Paths").add_guard("-").print()
 
     memgen = _MemGens[get_extension(args.MemGen)](memdef, config)
     memgen.generate(WriteFile(args.MemGen))
 
-    print(
-        Str(f"{_MemGens[get_extension(args.MemGen)].name} Generated")
-        .add_guard("=")
-        .contents
-    )
+    Str(f"{_MemGens[get_extension(args.MemGen)].name} Generated").add_guard("=").print()

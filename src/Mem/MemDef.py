@@ -71,49 +71,58 @@ class MemDef:
         self._addresses = sorted(self._addresses)
         self._arrays = sorted(self._arrays)
 
-    @property
-    def debug_str(self) -> str:
-        return "\n".join(
-            [
-                Str.from_rows(
-                    [[address.name, address.address] for address in self._addresses],
-                    ": ",
-                )
-                .insert_guard("-")
-                .insert_line("MemDef - Address")
-                .add_guard("=")
-                .contents,
-                Str.from_rows(
-                    [
-                        [array.name, address.name, address.address]
-                        for array in self._arrays
-                        for address in array.addresses
-                    ],
-                    ": ",
-                )
-                .insert_guard("-")
-                .insert_line("MemDef - Array")
-                .add_guard("=")
-                .contents,
-                Str.from_rows(
-                    [[alias.name, alias.alias.name] for alias in self._aliases], ": "
-                )
-                .insert_guard("-")
-                .insert_line("MemDef - Alias")
-                .add_guard("=")
-                .contents,
-                Str.from_rows(
-                    [
-                        [bookmark.name, bookmark.bookmark]
-                        for bookmark in self._bookmarks
-                    ],
-                    ": ",
-                )
-                .insert_guard("-")
-                .insert_line("MemDef - Bookmark")
-                .add_guard("=")
-                .contents,
-            ]
+    def print(self) -> None:
+        print(
+            "\n".join(
+                [
+                    str(
+                        Str.from_rows(
+                            [
+                                [address.name, address.address]
+                                for address in self._addresses
+                            ],
+                            separator=" : ",
+                        )
+                        .insert_guard(".")
+                        .insert_line("MemDef - Address")
+                        .add_guard("-")
+                    ),
+                    str(
+                        Str.from_rows(
+                            [
+                                [array.name, address.name, address.address]
+                                for array in self._arrays
+                                for address in array.addresses
+                            ],
+                            separator=" : ",
+                        )
+                        .insert_guard(".")
+                        .insert_line("MemDef - Array")
+                        .add_guard("-")
+                    ),
+                    str(
+                        Str.from_rows(
+                            [[alias.name, alias.alias.name] for alias in self._aliases],
+                            separator=" : ",
+                        )
+                        .insert_guard(".")
+                        .insert_line("MemDef - Alias")
+                        .add_guard("-")
+                    ),
+                    str(
+                        Str.from_rows(
+                            [
+                                [bookmark.name, bookmark.bookmark]
+                                for bookmark in self._bookmarks
+                            ],
+                            separator=" : ",
+                        )
+                        .insert_guard(".")
+                        .insert_line("MemDef - Bookmark")
+                        .add_guard("-")
+                    ),
+                ]
+            )
         )
 
     @property
