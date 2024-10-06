@@ -12,8 +12,6 @@ class PktConfig:
         "mask":       (str,  False, "upper"),
         "shift":      (str,  False, "upper"),
         "raw":        (str,  False, "upper"),
-        "prefix":     (str,  True,  "upper"),
-        "postfix":    (str,  True,  "upper"),
         "guard":      (str,  False, "upper"),
         "annotation": (bool, None,  None),
         "debug":      (bool, None,  None),
@@ -57,8 +55,6 @@ class PktConfig:
         self._mask: str = args.mask
         self._shift: str = args.shift
         self._raw: str = args.raw
-        self._prefix: str = args.prefix
-        self._postfix: str = args.postfix
         self._guard: str = args.guard
         self._annotation: bool = args.annotation
         self._debug: bool = args.debug
@@ -94,14 +90,6 @@ class PktConfig:
     @property
     def raw(self) -> str:
         return self._raw
-
-    @property
-    def prefix(self) -> str:
-        return self._prefix
-
-    @property
-    def postfix(self) -> str:
-        return self._postfix
 
     @property
     def guard(self) -> str:

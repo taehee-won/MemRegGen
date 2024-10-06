@@ -30,8 +30,6 @@ if __name__ == "__main__":
     parser.add_argument("--shift", default="SHIFT", type=str, help="shift name")
     parser.add_argument("--raw",   default="RAW",   type=str, help="raw name")
 
-    parser.add_argument("--prefix",        default="",   type=str, help="prefix for name")
-    parser.add_argument("--postfix",       default="",   type=str, help="postfix for name")
     parser.add_argument("--guard",                       type=str, help="header guard")
     parser.add_argument("--no-annotation", default=True,           help="disable annotation", action="store_false", dest="annotation")
 
