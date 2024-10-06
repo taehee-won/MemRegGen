@@ -458,6 +458,7 @@ class Packet:
 
     def append(self, field: "_Field") -> None:
         self._fields.append(field)
+        self._fields.sort()
 
 
 class Group:
@@ -502,6 +503,7 @@ class _Field:
 
     def append(self, enum: "_Enum") -> None:
         self._enums.append(enum)
+        self._enums.sort()
 
 
 class _Enum:
@@ -510,6 +512,9 @@ class _Enum:
         self._value: Union[IntStr, HexStr] = (
             IntStr(value) if IntStr.is_IntStr(value) else HexStr(value)
         )
+
+    def __lt__(self, other: "_Enum") -> bool:
+        return self.value.value < other.value.value
 
     @property
     def name(self) -> str:
