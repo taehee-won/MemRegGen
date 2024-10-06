@@ -1,11 +1,7 @@
 from typing import Final, Dict, Optional, Type, Tuple
 from argparse import Namespace
 
-from inc import (
-    InvalidArgumentTypeError,
-    NotExistArgumentError,
-    InvalidArgumentError,
-)
+from inc import InvalidError, NotExistError
 from inc import Str
 
 
@@ -33,33 +29,41 @@ class MemConfig:
             expected_case = value[2]
 
             if getattr(args, name, None) is None:
-                raise NotExistArgumentError(name, f"{name} should not be none")
+                raise NotExistError("Argument", f"{name} should not be none")
 
             value = getattr(args, name)
 
             if not isinstance(value, expected_type):
-                raise InvalidArgumentTypeError(name, value, expected_type)
+                raise InvalidError(
+                    "Argument Type",
+                    value,
+                    f"{name} should be {expected_type} type",
+                )
 
             if allow_empty is not None and not allow_empty and not value:
-                raise NotExistArgumentError(name, f"{name} should not be empty")
+                raise NotExistError("Argument", f"{name} should not be empty")
 
             if (
                 type(value) == str
                 and value
                 and not getattr(value, f"is{expected_case}")()
             ):
-                raise InvalidArgumentError(
-                    name, value, f"{name} should be {expected_case} cases"
+                raise InvalidError(
+                    "Argument",
+                    value,
+                    f"{name} should be {expected_case} cases",
                 )
 
         if (value := getattr(args, (name := "bits"))) not in [64, 32]:
-            raise InvalidArgumentError(name, value, f"{name} should be 64, 32")
+            raise InvalidError("Argument", value, f"{name} should be 64, 32")
 
         if (value := getattr(args, (name := "align"))) and (
             not value <= (limit := (16 if getattr(args, "bits") == 64 else 8))
         ):
-            raise InvalidArgumentError(
-                name, value, f"{name} should less or equal than {limit}"
+            raise InvalidError(
+                "Argument",
+                value,
+                f"{name} should less or equal than {limit}",
             )
 
     def _set_args(self, args: Namespace) -> None:
@@ -83,19 +87,7 @@ class MemConfig:
         return Str.from_rows(
             [
                 [name, str(getattr(self, name))]
-                for name in [
-                    "memory",
-                    "bits",
-                    "align",
-                    "plural",
-                    "array",
-                    "number",
-                    "prefix",
-                    "postfix",
-                    "guard",
-                    "annotation",
-                    "debug",
-                ]
+                for name in MemConfig._rules.keys()
                 if not (
                     isinstance(getattr(self, name), str) and not getattr(self, name)
                 )

@@ -1,24 +1,9 @@
 from inc.Exceptions import (
     NotExpectedError,
-    InvalidFileExtensionError,
-    NotExistFileError,
-    FileReadError,
-    FileWriteError,
-    NotExistCSVRowError,
-    NotExistCSVKeyError,
-    InvalidCSVRowError,
-    NotExistArgumentError,
-    InvalidArgumentError,
-    InvalidArgumentTypeError,
-    InvalidHexStrError,
-    InvalidIntStrError,
-    InvalidDefineError,
-    InvalidKindError,
-    DuplicatedNameError,
-    InvalidNameError,
-    NotExistAliasError,
-    NotExistBookmarkError,
-    InvalidAlignError,
+    InvalidError,
+    NotExistError,
+    DuplicatedError,
+    FailedError,
 )
 from inc.ReadFile import ReadFile
 from inc.WriteFile import WriteFile

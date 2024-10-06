@@ -1,7 +1,7 @@
 from os import mkdir
 from os.path import dirname, exists
 
-from inc.Exceptions import FileWriteError
+from inc.Exceptions import FailedError
 
 
 class WriteFile:
@@ -21,4 +21,4 @@ class WriteFile:
                 file.write(contents)
 
         except Exception as e:
-            raise FileWriteError(self._path, str(e))
+            raise FailedError("Write", f"file({self._path}): {e}")

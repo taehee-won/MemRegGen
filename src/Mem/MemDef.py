@@ -2,17 +2,7 @@ from typing import List, Union, Optional, Tuple
 from enum import Enum
 from re import match
 
-from inc import (
-    InvalidCSVRowError,
-    NotExistCSVKeyError,
-    InvalidKindError,
-    NotExpectedError,
-    DuplicatedNameError,
-    InvalidNameError,
-    InvalidDefineError,
-    NotExistAliasError,
-    NotExistBookmarkError,
-)
+from inc import InvalidError, DuplicatedError, NotExistError, NotExpectedError
 from inc import ReadFile, Str, HexStr, IntStr
 
 from src.Mem.MemConfig import MemConfig
@@ -46,12 +36,17 @@ class MemDef:
 
         for key in _Key:
             if key.value not in keys:
-                raise NotExistCSVKeyError(key.value)
+                raise NotExistError(
+                    "Key",
+                    f"{key.value} is not exist for CSV"
+                    + f": keys({', '.join(key.value for key in _Key)})",
+                )
 
         for row in rows:
             if not all(row[keys.index(key.value)] for key in _Key):
-                raise InvalidCSVRowError(
-                    row,
+                raise InvalidError(
+                    "CSV Row",
+                    ",".join(row),
                     "all cell of defined keys should be exist"
                     + f": keys({', '.join(key.value for key in _Key)})",
                 )
@@ -147,19 +142,20 @@ class MemDef:
 
     def _address(self, row: "_Row") -> None:
         if row.name in [address.name for address in self._addresses]:
-            raise DuplicatedNameError(row.name)
+            raise DuplicatedError("Name", row.name)
 
         self._addresses.append(Address(row.name, row.value))
 
     def _array(self, row: "_Row") -> None:
         if row.name in [address.name for address in self._addresses]:
-            raise DuplicatedNameError(row.name)
+            raise DuplicatedError("Name", row.name)
 
         tokens = row.define.split(",")
         if len(tokens) != 3 and len(tokens) != 4:
-            raise InvalidDefineError(
+            raise InvalidError(
+                "Define",
                 row.define,
-                f"invalid number of tokens in define" + f": expected 3 or 4",
+                f"invalid number of tokens in define: expected 3 or 4",
             )
 
         start = IntStr(tokens[1])
@@ -167,7 +163,8 @@ class MemDef:
         step = HexStr(tokens[3]) if len(tokens) == 4 else HexStr.from_int(0)
 
         if 1 < count.value and step.value == 0:
-            raise InvalidDefineError(
+            raise InvalidError(
+                "Define",
                 row.define,
                 f"invalid count and step combination"
                 + f": step is zero, but count({count}) is greater than 1",
@@ -191,7 +188,7 @@ class MemDef:
                     for address in array.addresses
                 ]
             ):
-                raise DuplicatedNameError(address.name)
+                raise DuplicatedError("Name", address.name)
 
         for array in self._arrays:
             if array.name == row.name:
@@ -208,7 +205,7 @@ class MemDef:
             + [address.name for array in self._arrays for address in array.addresses]
             + [alias.name for alias in self._aliases]
         ):
-            raise DuplicatedNameError(row.name)
+            raise DuplicatedError("Name", row.name)
 
         for address in self._addresses:
             if row.value == address.name:
@@ -225,7 +222,7 @@ class MemDef:
                     self._aliases.append(Alias(row.name, address))
                     return
 
-        raise NotExistAliasError(row.value)
+        raise NotExistError("Alias", f"{row.value} is not exist to register {row.name}")
 
     def _bookmark(self, row: "_Row") -> None:
         if row.name in (
@@ -235,7 +232,7 @@ class MemDef:
             + [alias.name for alias in self._aliases]
             + [bookmark.name for bookmark in self._bookmarks]
         ):
-            raise DuplicatedNameError(row.name)
+            raise DuplicatedError("Name", row.name)
 
         tokens = row.define.split(",")
         if len(tokens) == 1:
@@ -257,13 +254,16 @@ class MemDef:
                             return
 
         else:
-            raise InvalidDefineError(
+            raise InvalidError(
+                "Define",
                 row.define,
-                f"invalid number of tokens in define"
-                + f": expected 1(address) or 2(array)",
+                f"invalid number of tokens in define: expected 1(address) or 2(array)",
             )
 
-        raise NotExistBookmarkError(row.value)
+        raise NotExistError(
+            "Bookmark",
+            f"{row.value} is not exist to register {row.name}",
+        )
 
 
 class _Row:
@@ -271,7 +271,7 @@ class _Row:
         if name in ["int", "float", "while", "if", "else", "return"] or (
             not bool(match(r"^[A-Za-z_][A-Za-z0-9_]*$", name))
         ):
-            raise InvalidNameError(name)
+            raise InvalidError("Name", name)
 
         kind = next(
             (
@@ -283,7 +283,8 @@ class _Row:
             None,
         )
         if kind is None:
-            raise InvalidKindError(
+            raise InvalidError(
+                "Kind",
                 defined_kind,
                 f"name({name}), value({value}), define({define})"
                 + f": kind should be one of these types"

@@ -3,13 +3,13 @@ from os.path import isfile
 from hashlib import sha256
 from csv import reader
 
-from inc.Exceptions import NotExistFileError, FileReadError, NotExistCSVRowError
+from inc.Exceptions import NotExistError, FailedError
 
 
 class ReadFile:
     def __init__(self, path: str) -> None:
         if not isfile(path):
-            raise NotExistFileError(path)
+            raise NotExistError("File", f"{path} is not exist")
 
         self._path: str = path
 
@@ -33,7 +33,7 @@ class ReadFile:
                 contents = file.read()
 
         except Exception as e:
-            raise FileReadError(self._path, str(e))
+            raise FailedError("Read", f"file({self._path}): {e}")
 
         return contents
 
@@ -44,10 +44,10 @@ class ReadFile:
                 rows = [row for row in reader(file)]
 
         except Exception as e:
-            raise FileReadError(self._path, str(e))
+            raise FailedError("Read", f"file({self._path}): {e}")
 
         if not len(rows):
-            raise NotExistCSVRowError(self._path)
+            raise NotExistError("Rows", f"{self._path} file does not have rows")
 
         csv_keys = rows[0]
         rows.pop(0)

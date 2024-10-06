@@ -2,7 +2,7 @@ from typing import Final, Dict, Type
 from argparse import ArgumentParser
 from os.path import splitext, basename
 
-from inc import InvalidFileExtensionError, Str, ReadFile, WriteFile
+from inc import InvalidError, Str, ReadFile, WriteFile
 from src.Mem import MemConfig, MemDef
 from src.Mem import MemGen, MemCHeader, MemVerilogHeader, MemDoc
 
@@ -54,15 +54,17 @@ if __name__ == "__main__":
     get_extension = lambda path: splitext(path)[1][1:]
 
     if (extension := get_extension(args.MemDef)) != "csv":
-        raise InvalidFileExtensionError(
-            extension, f"path({args.MemDef})" + f": memdef extension should be csv"
+        raise InvalidError(
+            "File Extension",
+            extension,
+            f"path({args.MemDef}): memdef extension should be csv",
         )
 
     if (extension := get_extension(args.MemGen)) not in (extensions := _MemGens.keys()):
-        raise InvalidFileExtensionError(
+        raise InvalidError(
+            "File Extension",
             extension,
-            f"path({args.MemGen})"
-            + f": memgen extension should be one of these extensions"
+            f"path({args.MemGen}): memgen extension should be one of these extensions"
             + f": {', '.join(extensions)}",
         )
 
