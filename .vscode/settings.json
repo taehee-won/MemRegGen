@@ -2,6 +2,10 @@
     "cSpell.words": [
         "memdef",
         "memgen",
+        "pktdef",
+        "pktgen",
+        "regdef",
+        "reggen",
         "Verilog"
     ]
 }
