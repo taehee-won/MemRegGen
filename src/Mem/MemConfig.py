@@ -14,8 +14,6 @@ class MemConfig:
         "plural":     (str,  False, "upper"),
         "array":      (str,  False, "lower"),
         "number":     (str,  False, "upper"),
-        "prefix":     (str,  True,  "upper"),
-        "postfix":    (str,  True,  "upper"),
         "guard":      (str,  False, "upper"),
         "annotation": (bool, None,  None),
         "debug":      (bool, None,  None),
@@ -73,8 +71,6 @@ class MemConfig:
         self._plural: str = args.plural
         self._array: str = args.array
         self._number: str = args.number
-        self._prefix: str = args.prefix
-        self._postfix: str = args.postfix
         self._guard: str = args.guard
         self._annotation: bool = args.annotation
         self._debug: bool = args.debug
@@ -118,14 +114,6 @@ class MemConfig:
     @property
     def number(self) -> str:
         return self._number
-
-    @property
-    def prefix(self) -> str:
-        return self._prefix
-
-    @property
-    def postfix(self) -> str:
-        return self._postfix
 
     @property
     def guard(self) -> str:

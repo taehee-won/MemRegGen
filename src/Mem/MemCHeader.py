@@ -337,8 +337,6 @@ class MemCHeader(MemGen):
         if not tails:
             tails.append(self._config.memory)
 
-        name = f"{self._config.prefix}{name}{self._config.postfix}"
-
         for tail in tails:
             name += f"_{tail}"
 

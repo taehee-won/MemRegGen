@@ -8,7 +8,7 @@ from src.Mem import MemGen, MemCHeader, MemVerilogHeader, MemDoc
 
 
 name: Final[str] = "Memory Generator"
-version: Final[str] = "v4.1"
+version: Final[str] = "v4.2"
 
 
 _MemGens: Final[Dict[str, Type[MemGen]]] = {
@@ -33,8 +33,6 @@ if __name__ == "__main__":
     parser.add_argument("--plural",        default="S",   type=str, help="plural ending for address array")
     parser.add_argument("--array",         default="ch",  type=str, help="address array name")
     parser.add_argument("--number",        default="NUM", type=str, help="number name")
-    parser.add_argument("--prefix",        default="",    type=str, help="prefix for names")
-    parser.add_argument("--postfix",       default="",    type=str, help="postfix for names")
     parser.add_argument("--guard",                        type=str, help="header guard")
     parser.add_argument("--no-annotation", default=True,            help="disable annotation", action="store_false", dest="annotation")
 
