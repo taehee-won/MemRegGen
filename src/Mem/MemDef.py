@@ -382,7 +382,7 @@ class Array:
             return None
 
         return (
-            (HexStr.from_int(base), HexStr.from_int(step), step.bit_length())
+            (HexStr.from_int(base), HexStr.from_int(step), step.bit_length() - 1)
             if (step & (step - 1)) == 0
             else (HexStr.from_int(base), HexStr.from_int(step), None)
         )
