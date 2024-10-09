@@ -146,7 +146,6 @@ class PktCHeader(PktGen):
                                 self._name(field_name, self._config.mask),
                                 self._value(
                                     (1 << (field.bits[0] - field.bits[1] + 1)) - 1
-                                    << field.bits[1]
                                 ),
                             ],
                             [
