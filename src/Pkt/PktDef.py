@@ -239,7 +239,7 @@ class PktDef:
         if any(field.name == row.field for field in packet.fields):
             raise DuplicatedError("Field", row.field)
 
-        if len(row.bits) <= 3 or row.bits[0] != "[" or row.bits[-1] != "]":
+        if len(row.bits) <= 2 or row.bits[0] != "[" or row.bits[-1] != "]":
             raise InvalidError(
                 "Bits",
                 row.bits,
