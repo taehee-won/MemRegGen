@@ -68,13 +68,11 @@ class PktCHeader(PktGen):
             rows.append(
                 [
                     "//",
-                    "|",
                     "Group",
                     "|",
                     "Packet",
                     "|",
                     "Fields",
-                    "|",
                 ]
             )
 
@@ -83,13 +81,11 @@ class PktCHeader(PktGen):
                     rows.append(
                         [
                             "//",
-                            "|",
                             "",
                             "|",
                             f"{item.name}",
                             "|",
                             ", ".join(field.name for field in item.fields),
-                            "|",
                         ]
                     )
 
@@ -98,13 +94,11 @@ class PktCHeader(PktGen):
                         rows.append(
                             [
                                 "//",
-                                "|",
                                 item.name,
                                 "|",
                                 self._join(item.name, packet.name),
                                 "|",
                                 ", ".join(field.name for field in packet.fields),
-                                "|",
                             ]
                         )
 

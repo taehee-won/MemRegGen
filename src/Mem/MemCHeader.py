@@ -55,7 +55,6 @@ class MemCHeader(MemGen):
                     "",  # Alias
                     "|",
                     "",  # Bookmark
-                    "|",
                 ]
             )
 
@@ -72,7 +71,6 @@ class MemCHeader(MemGen):
                         "",  # Alias
                         "|",
                         "",  # Bookmark
-                        "|",
                     ]
                 )
 
@@ -95,7 +93,6 @@ class MemCHeader(MemGen):
                     "Alias",
                     "|",
                     "Bookmark",
-                    "|",
                 ],
             )
 
@@ -376,8 +373,6 @@ class MemCHeader(MemGen):
 
     def _append_address_section(self) -> None:
         if self._address_rows:
-            self._append_section_header("Address Section")
-
             self._append("")
             self._append_str(Str.from_rows(self._address_rows))
 
