@@ -340,7 +340,7 @@ class MemCHeader(MemGen):
         return name
 
     def _address(self, address: HexStr) -> str:
-        prefix = "UL("
+        prefix = "UL(" if self._config.bits == 32 else "ULL("
         postfix = ")"
 
         return f"{prefix}{address.get_aligned(self._config.align)}{postfix}"
