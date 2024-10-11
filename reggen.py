@@ -31,14 +31,14 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--offset",   default="OFS", type=str, help="offset name")
     parser.add_argument("-m", "--memory",   default="mem", type=str, help="memory address name")
 
-    parser.add_argument("-b", "--bits",  default=64, type=int, help="architecture bits",      choices=[32, 64])
+    parser.add_argument("-b", "--bits",  default=32, type=int, help="architecture bits",      choices=[32, 64])
     parser.add_argument("-l", "--align",             type=int, help="addresses align length", choices=list(range(1, 17)))
 
-    parser.add_argument("--mask",   default="MASK",  type=str, help="mask name")
-    parser.add_argument("--shift",  default="SHIFT", type=str, help="shift name")
-    parser.add_argument("--access", default="ACCESS", type=str, help="memory access name")
-    parser.add_argument("--reset",  default="RESET",  type=str, help="reset value name")
-    parser.add_argument("--raw",    default="RAW",   type=str, help="raw name")
+    parser.add_argument("--mask",   default="MASK",          type=str, help="mask name")
+    parser.add_argument("--shift",  default="SHIFT",         type=str, help="shift name")
+    parser.add_argument("--access", default="MEMORY_ACCESS", type=str, help="memory access name")
+    parser.add_argument("--reset",  default="RESET_VALUE",   type=str, help="reset value name")
+    parser.add_argument("--raw",    default="RAW",           type=str, help="raw name")
 
     parser.add_argument("--plural",        default="S",   type=str, help="plural ending for address array")
     parser.add_argument("--array",         default="ch",  type=str, help="address array name")

@@ -173,7 +173,7 @@ class RegDef:
         return self._file
 
     @property
-    def offset(self) -> List["Offset"]:
+    def offsets(self) -> List["Offset"]:
         return self._offsets
 
     @property
@@ -612,6 +612,43 @@ class Array:
     @property
     def offsets(self) -> List[Offset]:
         return self._offsets
+
+    @property
+    def indexes(self) -> List[int]:
+        return [int(offset.name) for offset in self._offsets]
+
+    @property
+    def step(self) -> Optional[Tuple[HexStr, Optional[HexStr], Optional[int]]]:
+        if len(self._offsets) == 0:
+            return None
+
+        if len(self._offsets) == 1:
+            return self._offsets[0].offset, None, None
+
+        start_index = int(self._offsets[0].name)
+        start_offset = self._offsets[0].offset.value
+
+        step = (self._offsets[1].offset.value - start_offset) / (
+            int(self._offsets[1].name) - start_index
+        )
+
+        if not step.is_integer() or step <= 0:
+            return None
+
+        step = int(step)
+        base = start_offset - (step * start_index)
+
+        if any(
+            base != (offset.offset.value - (step * int(offset.name)))
+            for offset in self._offsets
+        ):
+            return None
+
+        return (
+            (HexStr.from_int(base), HexStr.from_int(step), step.bit_length() - 1)
+            if (step & (step - 1)) == 0
+            else (HexStr.from_int(base), HexStr.from_int(step), None)
+        )
 
     @property
     def groups(self) -> List[Offset]:
