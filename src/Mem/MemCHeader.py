@@ -101,7 +101,8 @@ class MemCHeader(MemGen):
                 if all(not row[index - removed] for row in self._address_rows[1:]):
                     for row in self._address_rows:
                         del row[index - removed]  # Array, Alias, Bookmark
-                        del row[index - removed]  # |
+                        if index != 8:
+                            del row[index - removed]  # |
 
                     removed += 2
 
