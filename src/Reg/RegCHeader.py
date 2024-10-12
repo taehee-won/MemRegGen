@@ -1,11 +1,11 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 from reggen import name, version
 
-from inc import WriteFile, Str, HexStr, NotExpectedError
+from inc import WriteFile, Str, HexStr, IntStr
 
 from src.Reg.RegGen import RegGen
 from src.Reg.RegConfig import RegConfig
-from src.Reg.RegDef import RegDef, Offset, Array
+from src.Reg.RegDef import RegDef, Offset
 
 
 class RegCHeader(RegGen):
@@ -20,7 +20,7 @@ class RegCHeader(RegGen):
     def generate(self, file: WriteFile) -> None:
         self._set_register_rows()
         self._set_array_rows()
-        self._set_field_rows()
+        self._set_offset_group_items()
         self._set_offset_row_header()
 
         if not self._config.annotation:
@@ -53,7 +53,7 @@ class RegCHeader(RegGen):
                     offsets.append(
                         [
                             Offset(
-                                f"{array.name}_{offset.name}_{group.name}",
+                                self._join(array.name, offset.name, group.name),
                                 HexStr.from_int(
                                     offset.offset.value + group.offset.value
                                 ),
@@ -75,7 +75,7 @@ class RegCHeader(RegGen):
                     (
                         offset.name
                         if array is None
-                        else f"{array.name}_{offset_field.name}"
+                        else self._join(array.name, offset_field.name)
                     ),  # Keyword
                     "|",
                     "" if array is None else array.name,  # Array
@@ -97,7 +97,7 @@ class RegCHeader(RegGen):
                     (
                         offset.name
                         if array is None
-                        else f"{array.name}_{offset_field.name}"
+                        else self._join(array.name, offset_field.name)
                     ),  # Keyword
                 ]
             )
@@ -111,7 +111,7 @@ class RegCHeader(RegGen):
                     "",
                     "",
                     "//",
-                    "Keyword",
+                    "ID",
                     "|",
                     "Array",
                     "|",
@@ -158,12 +158,12 @@ class RegCHeader(RegGen):
                 self._array_register_rows.append(
                     [
                         "#define",
-                        f"{self._name(f'{array.name}_{group.name}', tails=[self._config.register])}{self._config.plural}({self._config.memory})",
+                        f"{self._name(self._join(array.name, group.name), tails=[self._config.register])}{self._config.plural}({self._config.memory})",
                         "{",
                         ", ".join(
                             (
                                 self._name(
-                                    f"{array.name}_{index}_{group.name}",
+                                    self._join(array.name, str(index), group.name),
                                     tails=[self._config.register],
                                     argument=self._config.memory,
                                 )
@@ -186,7 +186,7 @@ class RegCHeader(RegGen):
                             [
                                 "#define",
                                 self._name(
-                                    f"{array.name}_{group.name}",
+                                    self._join(array.name, group.name),
                                     tails=[self._config.register],
                                     argument=self._config.array,
                                 ),
@@ -201,7 +201,7 @@ class RegCHeader(RegGen):
                             [
                                 "#define",
                                 self._name(
-                                    f"{array.name}_{group.name}",
+                                    self._join(array.name, group.name),
                                     tails=[self._config.register],
                                     argument=self._config.array,
                                 ),
@@ -216,7 +216,7 @@ class RegCHeader(RegGen):
                             [
                                 "#define",
                                 self._name(
-                                    f"{array.name}_{group.name}",
+                                    self._join(array.name, group.name),
                                     tails=[self._config.register],
                                     argument=self._config.array,
                                 ),
@@ -232,7 +232,7 @@ class RegCHeader(RegGen):
                         [
                             "#define",
                             self._name(
-                                f"{array.name}_{group.name}",
+                                self._join(array.name, group.name),
                                 tails=[self._config.register],
                                 argument=self._config.array,
                             ),
@@ -243,25 +243,27 @@ class RegCHeader(RegGen):
                         ]
                     )
 
-    def _set_field_rows(self) -> None:
-        self._field_rows = []
+    def _set_offset_group_items(self) -> None:
+        self._items = []
 
-    def _name(
-        self,
-        name: str,
-        tails: List[str] = [],
-        argument: Optional[str] = None,
-    ) -> str:
-        for tail in tails:
-            name += f"_{tail}"
+        for offset in self._regdef.offsets:
+            self._items.append([None, offset, offset.offset.value])
 
-        if argument:
-            name += f"({argument})"
+        for array in self._regdef._arrays:
+            for group in array.groups:
+                self._items.append(
+                    [
+                        array,
+                        group,
+                        (
+                            array.offsets[0].offset.value
+                            if array.offsets
+                            else 0xFFFFFFFFFFFFFFFF
+                        ),
+                    ]
+                )
 
-        return name
-
-    def _address(self, address: HexStr) -> str:
-        return address.get_aligned(self._config.align)
+        self._items.sort(key=lambda offset: offset[2])
 
     def _append(self, c: str) -> None:
         self._contents += c + "\n"
@@ -314,7 +316,141 @@ class RegCHeader(RegGen):
                 self._append_str(Str.from_rows(rows))
 
     def _append_field_section(self) -> None:
-        pass
+        if self._items:
+            for item in self._items:
+                name = (
+                    item[1].name
+                    if item[0] is None
+                    else self._join(item[0].name, item[1].name)
+                )
+                section = name + (
+                    f" : {', '.join(field.name for field in item[1].fields)}"
+                    if item[1].fields
+                    else ""
+                )
+
+                self._append_section_header(section)
+
+                if item[1].fields:
+                    for field in item[1].fields:
+                        field_name = self._join(name, field.name)
+                        self._append("")
+                        self._append(f"// {self._name(field_name)}")
+
+                        self._append("")
+                        self._append_str(
+                            Str.from_rows(
+                                [
+                                    [
+                                        "#define",
+                                        self._name(
+                                            field_name, tails=[self._config.mask]
+                                        ),
+                                        self._value(
+                                            (1 << (field.bits[0] - field.bits[1] + 1))
+                                            - 1
+                                        ),
+                                    ],
+                                    [
+                                        "#define",
+                                        self._name(
+                                            field_name, tails=[self._config.shift]
+                                        ),
+                                        f"( {field.bits[1]} )",
+                                    ],
+                                ]
+                            )
+                        )
+
+                        if field.enums:
+                            self._append("")
+                            self._append_str(
+                                Str.from_rows(
+                                    [
+                                        [
+                                            "#define",
+                                            self._name(
+                                                self._join(field_name, enum.name)
+                                            ),
+                                            f"( {enum.val.value} )",
+                                        ]
+                                        for enum in field.enums
+                                    ]
+                                )
+                            )
+
+                            self._append("")
+                            self._append_str(
+                                Str.from_rows(
+                                    [
+                                        [
+                                            "#define",
+                                            self._name(
+                                                self._join(field_name, enum.name),
+                                                tails=[self._config.raw],
+                                            ),
+                                            self._value(
+                                                enum.val.value << field.bits[1]
+                                            ),
+                                        ]
+                                        for enum in field.enums
+                                    ]
+                                )
+                            )
+
+                    self._append("")
+                    self._append(f"// {self._name(name, tails=[self._config.raw])}")
+
+                    self._append("")
+                    self._append_str(
+                        Str.from_rows(
+                            [
+                                [
+                                    "#define",
+                                    f"{self._name(self._join(name, field.name), tails=[self._config.raw])}({field.name.lower()})",
+                                    f"( ( {field.name.lower()}",
+                                    "&",
+                                    self._name(
+                                        self._join(name, field.name),
+                                        tails=[self._config.mask],
+                                    ),
+                                    ") <<",
+                                    self._name(
+                                        self._join(name, field.name),
+                                        tails=[self._config.shift],
+                                    ),
+                                    ")",
+                                ]
+                                for field in item[1].fields
+                            ]
+                        )
+                    )
+
+                    self._append("")
+                    self._append(
+                        f"#define {self._name(name, tails=[self._config.raw])}"
+                        + f"({', '.join(field.name.lower() for field in item[1].fields)})"
+                        + f" ( {' | '.join(f'{self._name(self._join(name, field.name), tails=[self._config.raw])}({field.name.lower()})' for field in item[1].fields)} )"
+                    )
+
+                else:
+                    self._append("")
+                    self._append(
+                        f"// {self._name(name, tails=[self._config.raw])} : NO FIELD"
+                    )
+
+                    self._append("")
+                    self._append_str(
+                        Str.from_rows(
+                            [
+                                [
+                                    "#define",
+                                    f"{self._name(name, tails=[self._config.raw])}()",
+                                    self._value(0),
+                                ]
+                            ]
+                        )
+                    )
 
     def _append_close_header_guard(self) -> None:
         guard = self._config.guard + "_H"
@@ -324,3 +460,35 @@ class RegCHeader(RegGen):
 
     def _write(self, file: WriteFile) -> None:
         file.write(self._contents)
+
+    def _join(self, *tokens) -> str:
+        return "_".join(tokens)
+
+    def _name(
+        self,
+        name: str,
+        tails: List[str] = [],
+        argument: Optional[str] = None,
+    ) -> str:
+        if self._config.name:
+            name = f"{self._config.name}_{name}"
+
+        for tail in tails:
+            name += f"_{tail}"
+
+        if argument:
+            name += f"({argument})"
+
+        return name
+
+    def _address(self, address: HexStr) -> str:
+        return address.get_aligned(self._config.align)
+
+    def _value(self, value: Union[HexStr, IntStr, int]) -> str:
+        if isinstance(value, IntStr):
+            value = HexStr.from_int(value.value)
+
+        elif isinstance(value, int):
+            value = HexStr.from_int(value)
+
+        return f"UL({value.get_aligned(8)})"

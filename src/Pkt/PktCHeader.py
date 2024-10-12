@@ -1,4 +1,4 @@
-from typing import Optional, List, Union
+from typing import Optional, Union
 from pktgen import name, version
 
 from inc import WriteFile, Str, HexStr, IntStr
