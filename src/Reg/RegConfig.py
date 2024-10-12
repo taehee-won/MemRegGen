@@ -23,6 +23,7 @@ class RegConfig:
         "array":      (str,  False, "lower"),
         "number":     (str,  False, "upper"),
         "guard":      (str,  False, "upper"),
+        "notes":      (str,  True,  None),
         "annotation": (bool, None,  None),
         "debug":      (bool, None,  None),
     }
@@ -52,6 +53,7 @@ class RegConfig:
             if (
                 type(value) == str
                 and value
+                and expected_case
                 and not getattr(value, f"is{expected_case}")()
             ):
                 raise InvalidError(
@@ -88,6 +90,7 @@ class RegConfig:
         self._array: str = args.array
         self._number: str = args.number
         self._guard: str = args.guard
+        self._notes: str = args.notes
         self._annotation: bool = args.annotation
         self._debug: bool = args.debug
 
@@ -166,6 +169,10 @@ class RegConfig:
     @property
     def guard(self) -> str:
         return self._guard
+
+    @property
+    def notes(self) -> str:
+        return self._notes
 
     @property
     def annotation(self) -> bool:

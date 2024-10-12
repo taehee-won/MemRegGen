@@ -31,9 +31,11 @@ if __name__ == "__main__":
     parser.add_argument("--raw",   default="RAW",   type=str, help="raw name")
 
     parser.add_argument("--guard",                       type=str, help="header guard")
-    parser.add_argument("--no-annotation", default=True,           help="disable annotation", action="store_false", dest="annotation")
 
-    parser.add_argument("-d", "--debug", default=False, help="enable debug messages", action="store_true", dest="debug")
+    parser.add_argument("--notes", default="", type=lambda s: s.replace('\\n', '\n'), help="notes for headers")
+
+    parser.add_argument("--no-annotation", default=True, help="disable annotation",    action="store_false", dest="annotation")
+    parser.add_argument("-d", "--debug",  default=False, help="enable debug messages", action="store_true",  dest="debug")
     # fmt: on
 
     args = parser.parse_args()

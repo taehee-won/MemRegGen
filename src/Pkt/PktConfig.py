@@ -13,6 +13,7 @@ class PktConfig:
         "shift":      (str,  False, "upper"),
         "raw":        (str,  False, "upper"),
         "guard":      (str,  False, "upper"),
+        "notes":      (str,  True,  None),
         "annotation": (bool, None,  None),
         "debug":      (bool, None,  None),
     }
@@ -42,6 +43,7 @@ class PktConfig:
             if (
                 type(value) == str
                 and value
+                and expected_case
                 and not getattr(value, f"is{expected_case}")()
             ):
                 raise InvalidError(
@@ -56,6 +58,7 @@ class PktConfig:
         self._shift: str = args.shift
         self._raw: str = args.raw
         self._guard: str = args.guard
+        self._notes: str = args.notes
         self._annotation: bool = args.annotation
         self._debug: bool = args.debug
 
@@ -94,6 +97,10 @@ class PktConfig:
     @property
     def guard(self) -> str:
         return self._guard
+
+    @property
+    def notes(self) -> str:
+        return self._notes
 
     @property
     def annotation(self) -> bool:
