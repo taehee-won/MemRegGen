@@ -8,7 +8,7 @@ from src.Reg import RegGen, RegCHeader, RegVerilogHeader, RegDoc
 
 
 name: Final[str] = "Register Generator"
-version: Final[str] = "v0.1"
+version: Final[str] = "v1.0"
 
 
 _RegGens: Final[Dict[str, Type[RegGen]]] = {

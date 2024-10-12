@@ -8,7 +8,7 @@ from src.Pkt import PktGen, PktCHeader, PktDoc
 
 
 name: Final[str] = "Packet Generator"
-version: Final[str] = "v1.0"
+version: Final[str] = "v1.1"
 
 
 _PktGens: Final[Dict[str, Type[PktGen]]] = {
