@@ -291,6 +291,11 @@ class RegCHeader(RegGen):
         self._append("")
         self._append("#include <const.h>")
 
+        self._append("")
+        self._append("#ifndef __ASSEMBLY__")
+        self._append("#include <stdint.h> // for union")
+        self._append("#endif")
+
     def _append_section_header(self, section: str) -> None:
         self._append("")
         self._append_str(Str(section).add_guard("=").add_prefix("// "))
@@ -332,6 +337,49 @@ class RegCHeader(RegGen):
                 self._append_section_header(section)
 
                 if item[1].fields:
+                    self._append("")
+                    self._append("#ifndef __ASSEMBLY__")
+
+                    union = Str(f"union {name} " + "{")
+                    union.append_line(f"\t{self._variable("raw")};")
+                    union.append_line("")
+                    union.append_line("\tstruct {")
+
+                    rows = []
+
+                    curr = 0
+                    reserved = 0
+                    for field in item[1].fields:
+                        start = field.bits[1]
+                        end = field.bits[0]
+
+                        if curr != start:
+                            rows.append([f"RSVD{reserved}", str(start - curr)])
+                            reserved += 1
+
+                        rows.append([field.name, end - start + 1])
+
+                        curr = end + 1
+
+                    if curr != self._config.bits:
+                        rows.append([f"RSVD{reserved}", str(self._config.bits - curr)])
+
+                    print(rows)
+                    union.append(
+                        Str.from_rows(
+                            [
+                                [self._variable(row[0]), ":", str(row[1]) + ";"]
+                                for row in rows
+                            ]
+                        ).add_prefix("\t\t")
+                    )
+
+                    union.append_line("\t};")
+                    union.append_line("};")
+
+                    self._append_str(union)
+                    self._append("#endif")
+
                     for field in item[1].fields:
                         field_name = self._join(name, field.name)
                         self._append("")
@@ -491,4 +539,11 @@ class RegCHeader(RegGen):
         elif isinstance(value, int):
             value = HexStr.from_int(value)
 
-        return f"UL({value.get_aligned(8)})"
+        return (
+            f"UL({value.get_aligned(8)})"
+            if self._config.bits == 32
+            else f"ULL({value.get_aligned(16)})"
+        )
+
+    def _variable(self, value: str) -> str:
+        return f"uint{self._config.bits}_t " + value
