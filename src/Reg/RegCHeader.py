@@ -364,7 +364,6 @@ class RegCHeader(RegGen):
                     if curr != self._config.bits:
                         rows.append([f"RSVD{reserved}", str(self._config.bits - curr)])
 
-                    print(rows)
                     union.append(
                         Str.from_rows(
                             [

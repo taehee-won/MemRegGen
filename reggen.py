@@ -1,20 +1,29 @@
 from typing import Final, Dict, Type
+from enum import Enum
 from argparse import ArgumentParser
 from os.path import splitext, basename
 
 from inc import InvalidError, Str, ReadFile, WriteFile
 from src.Reg import RegConfig, RegDef
-from src.Reg import RegGen, RegCHeader, RegVerilogHeader, RegDoc
+from src.Reg import RegGen, RegCHeader, RegVerilogHeader, RegDoc, RegCTest
 
 
 name: Final[str] = "Register Generator"
-version: Final[str] = "v1.0"
+version: Final[str] = "v2.0"
 
 
-_RegGens: Final[Dict[str, Type[RegGen]]] = {
-    "h": RegCHeader,
-    "vh": RegVerilogHeader,
-    "csv": RegDoc,
+class Gen(Enum):
+    CHeader = "CHeader"
+    CTest = "CTest"
+    VerilogHeader = "VerilogHeader"
+    Doc = "Doc"
+
+
+RegGens: Final[Dict[Gen, Type[RegGen]]] = {
+    Gen.CHeader: RegCHeader,
+    Gen.CTest: RegCTest,
+    Gen.VerilogHeader: RegVerilogHeader,
+    Gen.Doc: RegDoc,
 }
 
 
@@ -22,6 +31,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
 
     # fmt: off
+    parser.add_argument("Gen",    type=str, help="Gen type",        choices=[gen.value for gen in Gen])
     parser.add_argument("RegDef", type=str, help="RegDef file path")
     parser.add_argument("RegGen", type=str, help="RegGen file path")
 
@@ -70,14 +80,6 @@ if __name__ == "__main__":
             f"path({args.RegDef}): regdef extension should be csv",
         )
 
-    if (extension := get_extension(args.RegGen)) not in (extensions := _RegGens.keys()):
-        raise InvalidError(
-            "File Extension",
-            extension,
-            f"path({args.RegGen}): reggen extension should be one of these extensions"
-            + f": {', '.join(extensions)}",
-        )
-
     config = RegConfig(args)
     Str(str(config)).insert_guard(".").insert_line("Config").add_guard("-").print()
 
@@ -89,7 +91,8 @@ if __name__ == "__main__":
         [["Reg Def", args.RegDef], ["Reg Gen", args.RegGen]], separator=" : "
     ).insert_guard(".").insert_line("File Paths").add_guard("-").print()
 
-    reggen = _RegGens[get_extension(args.RegGen)](regdef, config)
+    gen = Gen(args.Gen)
+    reggen = RegGens[gen](regdef, config)
     reggen.generate(WriteFile(args.RegGen))
 
-    Str(f"{_RegGens[get_extension(args.RegGen)].name} Generated").add_guard("=").print()
+    Str(f"{RegGens[gen].name} Generated").add_guard("=").print()

@@ -1,4 +1,5 @@
 from typing import Final, Dict, Type
+from enum import Enum
 from argparse import ArgumentParser
 from os.path import splitext, basename
 
@@ -8,12 +9,17 @@ from src.Pkt import PktGen, PktCHeader, PktDoc
 
 
 name: Final[str] = "Packet Generator"
-version: Final[str] = "v1.1"
+version: Final[str] = "v2.0"
 
 
-_PktGens: Final[Dict[str, Type[PktGen]]] = {
-    "h": PktCHeader,
-    "csv": PktDoc,
+class Gen(Enum):
+    CHeader = "CHeader"
+    Doc = "Doc"
+
+
+PktGens: Final[Dict[Gen, Type[PktGen]]] = {
+    Gen.CHeader: PktCHeader,
+    Gen.Doc: PktDoc,
 }
 
 
@@ -21,6 +27,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
 
     # fmt: off
+    parser.add_argument("Gen",    type=str, help="Gen type",        choices=[gen.value for gen in Gen])
     parser.add_argument("PktDef", type=str, help="PktDef file path")
     parser.add_argument("PktGen", type=str, help="PktGen file path")
 
@@ -54,14 +61,6 @@ if __name__ == "__main__":
             f"path({args.PktDef}): pktdef extension should be csv",
         )
 
-    if (extension := get_extension(args.PktGen)) not in (extensions := _PktGens.keys()):
-        raise InvalidError(
-            "File Extension",
-            extension,
-            f"path({args.PktGen}): pktgen extension should be one of these extensions"
-            + f": {', '.join(extensions)}",
-        )
-
     config = PktConfig(args)
     Str(str(config)).insert_guard(".").insert_line("Config").add_guard("-").print()
 
@@ -73,7 +72,8 @@ if __name__ == "__main__":
         [["PktDef", args.PktDef], ["PktGen", args.PktGen]], separator=" : "
     ).insert_guard(".").insert_line("File Paths").add_guard("-").print()
 
-    pktgen = _PktGens[get_extension(args.PktGen)](pktdef, config)
+    gen = Gen(args.Gen)
+    pktgen = PktGens[gen](pktdef, config)
     pktgen.generate(WriteFile(args.PktGen))
 
-    Str(f"{_PktGens[get_extension(args.PktGen)].name} Generated").add_guard("=").print()
+    Str(f"{PktGens[gen].name} Generated").add_guard("=").print()

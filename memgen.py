@@ -1,4 +1,5 @@
 from typing import Final, Dict, Type
+from enum import Enum
 from argparse import ArgumentParser
 from os.path import splitext, basename
 
@@ -8,13 +9,19 @@ from src.Mem import MemGen, MemCHeader, MemVerilogHeader, MemDoc
 
 
 name: Final[str] = "Memory Generator"
-version: Final[str] = "v4.3"
+version: Final[str] = "v5.0"
 
 
-_MemGens: Final[Dict[str, Type[MemGen]]] = {
-    "h": MemCHeader,
-    "vh": MemVerilogHeader,
-    "csv": MemDoc,
+class Gen(Enum):
+    CHeader = "CHeader"
+    VerilogHeader = "VerilogHeader"
+    Doc = "Doc"
+
+
+MemGens: Final[Dict[Gen, Type[MemGen]]] = {
+    Gen.CHeader: MemCHeader,
+    Gen.VerilogHeader: MemVerilogHeader,
+    Gen.Doc: MemDoc,
 }
 
 
@@ -22,6 +29,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
 
     # fmt: off
+    parser.add_argument("Gen",    type=str, help="Gen type",        choices=[gen.value for gen in Gen])
     parser.add_argument("MemDef", type=str, help="MemDef file path")
     parser.add_argument("MemGen", type=str, help="MemGen file path")
 
@@ -60,14 +68,6 @@ if __name__ == "__main__":
             f"path({args.MemDef}): memdef extension should be csv",
         )
 
-    if (extension := get_extension(args.MemGen)) not in (extensions := _MemGens.keys()):
-        raise InvalidError(
-            "File Extension",
-            extension,
-            f"path({args.MemGen}): memgen extension should be one of these extensions"
-            + f": {', '.join(extensions)}",
-        )
-
     config = MemConfig(args)
     Str(str(config)).insert_guard(".").insert_line("Config").add_guard("-").print()
 
@@ -79,7 +79,8 @@ if __name__ == "__main__":
         [["MemDef", args.MemDef], ["MemGen", args.MemGen]], separator=" : "
     ).insert_guard(".").insert_line("File Paths").add_guard("-").print()
 
-    memgen = _MemGens[get_extension(args.MemGen)](memdef, config)
+    gen = Gen(args.Gen)
+    memgen = MemGens[gen](memdef, config)
     memgen.generate(WriteFile(args.MemGen))
 
-    Str(f"{_MemGens[get_extension(args.MemGen)].name} Generated").add_guard("=").print()
+    Str(f"{MemGens[gen].name} Generated").add_guard("=").print()
