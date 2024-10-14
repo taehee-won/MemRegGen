@@ -9,7 +9,7 @@ from src.Pkt import PktGen, PktCHeader, PktDoc
 
 
 name: Final[str] = "Packet Generator"
-version: Final[str] = "v2.0"
+version: Final[str] = "v2.1"
 
 
 class Gen(Enum):
@@ -36,6 +36,7 @@ if __name__ == "__main__":
     parser.add_argument("--mask",  default="MASK",  type=str, help="mask name")
     parser.add_argument("--shift", default="SHIFT", type=str, help="shift name")
     parser.add_argument("--raw",   default="RAW",   type=str, help="raw name")
+    parser.add_argument("--value", default="VALUE", type=str, help="value name")
 
     parser.add_argument("--guard",                       type=str, help="header guard")
 

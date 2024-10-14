@@ -143,7 +143,8 @@ class PktCHeader(PktGen):
                                 "#define",
                                 self._name(field_name, self._config.mask),
                                 self._value(
-                                    (1 << (field.bits[0] - field.bits[1] + 1)) - 1
+                                    ((1 << (field.bits[0] - field.bits[1] + 1)) - 1)
+                                    << field.bits[1]
                                 ),
                             ],
                             [
@@ -195,10 +196,10 @@ class PktCHeader(PktGen):
                             "#define",
                             f"{self._name(packet_name, field.name, self._config.raw)}({field.name.lower()})",
                             f"( ( {field.name.lower()}",
-                            "&",
-                            self._name(packet_name, field.name, self._config.mask),
-                            ") <<",
+                            "<<",
                             self._name(packet_name, field.name, self._config.shift),
+                            ") &",
+                            self._name(packet_name, field.name, self._config.mask),
                             ")",
                         ]
                         for field in packet.fields
@@ -211,6 +212,25 @@ class PktCHeader(PktGen):
                 f"#define {self._name(packet_name, self._config.raw)}"
                 + f"({', '.join(field.name.lower() for field in packet.fields)})"
                 + f" ( {' | '.join(f'{self._name(packet_name, field.name, self._config.raw)}({field.name.lower()})' for field in packet.fields)} )"
+            )
+
+            self._append("")
+            self._append_str(
+                Str.from_rows(
+                    [
+                        [
+                            "#define",
+                            f"{self._name(packet_name, field.name, self._config.value)}({self._config.raw.lower()})",
+                            f"( ( {self._config.raw.lower()}",
+                            "&",
+                            self._name(packet_name, field.name, self._config.mask),
+                            ") >>",
+                            self._name(packet_name, field.name, self._config.shift),
+                            ")",
+                        ]
+                        for field in packet.fields
+                    ]
+                )
             )
 
         else:

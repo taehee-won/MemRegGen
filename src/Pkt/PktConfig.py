@@ -12,6 +12,7 @@ class PktConfig:
         "mask":       (str,  False, "upper"),
         "shift":      (str,  False, "upper"),
         "raw":        (str,  False, "upper"),
+        "value":      (str,  False, "upper"),
         "guard":      (str,  False, "upper"),
         "notes":      (str,  True,  None),
         "annotation": (bool, None,  None),
@@ -57,6 +58,7 @@ class PktConfig:
         self._mask: str = args.mask
         self._shift: str = args.shift
         self._raw: str = args.raw
+        self._value: str = args.value
         self._guard: str = args.guard
         self._notes: str = args.notes
         self._annotation: bool = args.annotation
@@ -93,6 +95,10 @@ class PktConfig:
     @property
     def raw(self) -> str:
         return self._raw
+
+    @property
+    def value(self) -> str:
+        return self._value
 
     @property
     def guard(self) -> str:
