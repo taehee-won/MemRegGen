@@ -3,13 +3,10 @@ from enum import Enum
 from argparse import ArgumentParser
 from os.path import splitext, basename
 
+from infos import pktgen_name, pktgen_version
 from inc import InvalidError, Str, ReadFile, WriteFile
 from src.Pkt import PktConfig, PktDef
 from src.Pkt import PktGen, PktCHeader, PktDoc
-
-
-name: Final[str] = "Packet Generator"
-version: Final[str] = "v2.1"
 
 
 class Gen(Enum):
@@ -51,7 +48,7 @@ if __name__ == "__main__":
     if args.guard is None:
         args.guard = splitext(basename(args.PktGen))[0].upper()
 
-    Str(f"{name} {version}").add_guard("=").print()
+    Str(f"{pktgen_name} {pktgen_version}").add_guard("=").print()
 
     get_extension = lambda path: splitext(path)[1][1:]
 

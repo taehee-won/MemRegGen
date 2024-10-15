@@ -3,25 +3,22 @@ from enum import Enum
 from argparse import ArgumentParser
 from os.path import splitext, basename
 
+from infos import reggen_name, reggen_version
 from inc import InvalidError, Str, ReadFile, WriteFile
 from src.Reg import RegConfig, RegDef
-from src.Reg import RegGen, RegCHeader, RegVerilogHeader, RegDoc, RegCTest
-
-
-name: Final[str] = "Register Generator"
-version: Final[str] = "v2.0"
+from src.Reg import RegGen, RegCHeader, RegVerilogHeader, RegDoc, RegCTestHeader
 
 
 class Gen(Enum):
     CHeader = "CHeader"
-    CTest = "CTest"
+    CTestHeader = "CTestHeader"
     VerilogHeader = "VerilogHeader"
     Doc = "Doc"
 
 
 RegGens: Final[Dict[Gen, Type[RegGen]]] = {
     Gen.CHeader: RegCHeader,
-    Gen.CTest: RegCTest,
+    Gen.CTestHeader: RegCTestHeader,
     Gen.VerilogHeader: RegVerilogHeader,
     Gen.Doc: RegDoc,
 }
@@ -69,7 +66,7 @@ if __name__ == "__main__":
     if args.align is None:
         args.align = 16 if getattr(args, "bits") == 64 else 8
 
-    Str(f"{name} {version}").add_guard("=").print()
+    Str(f"{reggen_name} {reggen_version}").add_guard("=").print()
 
     get_extension = lambda path: splitext(path)[1][1:]
 

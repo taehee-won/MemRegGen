@@ -3,13 +3,10 @@ from enum import Enum
 from argparse import ArgumentParser
 from os.path import splitext, basename
 
+from infos import memgen_name, memgen_version
 from inc import InvalidError, Str, ReadFile, WriteFile
 from src.Mem import MemConfig, MemDef
 from src.Mem import MemGen, MemCHeader, MemVerilogHeader, MemDoc
-
-
-name: Final[str] = "Memory Generator"
-version: Final[str] = "v5.0"
 
 
 class Gen(Enum):
@@ -57,7 +54,7 @@ if __name__ == "__main__":
     if args.align is None:
         args.align = 16 if getattr(args, "bits") == 64 else 8
 
-    Str(f"{name} {version}").add_guard("=").print()
+    Str(f"{memgen_name} {memgen_version}").add_guard("=").print()
 
     get_extension = lambda path: splitext(path)[1][1:]
 
