@@ -50,7 +50,7 @@ class _Kind(Enum):
     ATTRIBUTE = "attribute,^"
 
 
-class _Opt(Enum):
+class Opt(Enum):
     Bit32 = "-32"
     Bit64 = "-64"
 
@@ -488,12 +488,12 @@ class _Row:
         self._kind = kind
 
         for opt in opts:
-            if opt not in [_opt.value for _opt in _Opt]:
+            if opt not in [_opt.value for _opt in Opt]:
                 raise InvalidError(
-                    "opt", opt, f"opts({', '.join(_opt.value for _opt in _Opt)})"
+                    "opt", opt, f"opts({', '.join(_opt.value for _opt in Opt)})"
                 )
 
-        self._opts = [_Opt(opt) for opt in opts]
+        self._opts = [Opt(opt) for opt in opts]
 
     @property
     def name(self) -> str:
@@ -544,7 +544,7 @@ class _Row:
         return self._val
 
     @property
-    def opts(self) -> List[_Opt]:
+    def opts(self) -> List[Opt]:
         return self._opts
 
     @property
@@ -556,10 +556,10 @@ class _Row:
 
 
 class Offset:
-    def __init__(self, name: str, offset: str, opts: List[_Opt] = []) -> None:
+    def __init__(self, name: str, offset: str, opts: List[Opt] = []) -> None:
         self._name: str = name
         self._offset: HexStr = HexStr(offset)
-        self._opts: List[_Opt] = opts
+        self._opts: List[Opt] = opts
 
         self._fields: List[_Field] = []
 
@@ -575,7 +575,7 @@ class Offset:
         return self._offset
 
     @property
-    def opts(self) -> List[_Opt]:
+    def opts(self) -> List[Opt]:
         return self._opts
 
     @property

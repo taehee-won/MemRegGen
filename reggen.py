@@ -39,7 +39,7 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--memory",   default="mem", type=str, help="memory address name")
 
     parser.add_argument("-b", "--bits",  default=32, type=int, help="architecture bits",      choices=[32, 64])
-    parser.add_argument("-l", "--align",             type=int, help="addresses align length", choices=list(range(1, 17)))
+    parser.add_argument("-l", "--align", default=8,  type=int, help="offsets align length", choices=list(range(1, 17)))
 
     parser.add_argument("--mask",   default="MASK",          type=str, help="mask name")
     parser.add_argument("--shift",  default="SHIFT",         type=str, help="shift name")
@@ -62,9 +62,6 @@ if __name__ == "__main__":
 
     if args.guard is None:
         args.guard = splitext(basename(args.RegGen))[0].upper()
-
-    if args.align is None:
-        args.align = 16 if getattr(args, "bits") == 64 else 8
 
     Str(f"{reggen_name} {reggen_version}").add_guard("=").print()
 

@@ -9,4 +9,4 @@
 #define ULL(address) (addressULL)
 #endif
 
-#endif
+#endif // CONST_H

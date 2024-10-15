@@ -5,7 +5,7 @@ from inc import WriteFile, Str, HexStr, IntStr
 
 from src.Reg.RegGen import RegGen
 from src.Reg.RegConfig import RegConfig
-from src.Reg.RegDef import RegDef, Offset
+from src.Reg.RegDef import RegDef, Offset, Opt
 
 
 class RegCHeader(RegGen):
@@ -336,12 +336,18 @@ class RegCHeader(RegGen):
 
                 self._append_section_header(section)
 
+                item_bits = (
+                    32
+                    if Opt.Bit32 in item[1].opts
+                    else (64 if Opt.Bit64 in item[1].opts else None)
+                )
+
                 if item[1].fields:
                     self._append("")
                     self._append("#ifndef __ASSEMBLY__")
 
                     union = Str(f"union {name} " + "{")
-                    union.append_line(f"\t{self._variable('raw')};")
+                    union.append_line(f"\t{self._variable('raw', bits=item_bits)};")
                     union.append_line("")
                     union.append_line("\tstruct {")
 
@@ -367,7 +373,11 @@ class RegCHeader(RegGen):
                     union.append(
                         Str.from_rows(
                             [
-                                [self._variable(row[0]), ":", str(row[1]) + ";"]
+                                [
+                                    self._variable(row[0], bits=item_bits),
+                                    ":",
+                                    str(row[1]) + ";",
+                                ]
                                 for row in rows
                             ]
                         ).add_prefix("\t\t")
@@ -395,7 +405,8 @@ class RegCHeader(RegGen):
                                         ),
                                         self._value(
                                             (1 << (field.bits[0] - field.bits[1] + 1))
-                                            - 1
+                                            - 1,
+                                            bits=item_bits,
                                         ),
                                     ],
                                     [
@@ -437,7 +448,8 @@ class RegCHeader(RegGen):
                                                 tails=[self._config.raw],
                                             ),
                                             self._value(
-                                                enum.val.value << field.bits[1]
+                                                enum.val.value << field.bits[1],
+                                                bits=item_bits,
                                             ),
                                         ]
                                         for enum in field.enums
@@ -493,7 +505,10 @@ class RegCHeader(RegGen):
                                 [
                                     "#define",
                                     f"{self._name(name, tails=[self._config.raw])}()",
-                                    self._value(0),
+                                    self._value(
+                                        0,
+                                        bits=item_bits,
+                                    ),
                                 ]
                             ]
                         )
@@ -531,18 +546,28 @@ class RegCHeader(RegGen):
     def _address(self, address: HexStr) -> str:
         return address.get_aligned(self._config.align)
 
-    def _value(self, value: Union[HexStr, IntStr, int]) -> str:
+    def _value(
+        self,
+        value: Union[HexStr, IntStr, int],
+        bits: Optional[int] = None,
+    ) -> str:
         if isinstance(value, IntStr):
             value = HexStr.from_int(value.value)
 
         elif isinstance(value, int):
             value = HexStr.from_int(value)
 
+        if bits is None:
+            bits = self._config.bits
+
         return (
             f"UL({value.get_aligned(8)})"
-            if self._config.bits == 32
+            if bits == 32
             else f"ULL({value.get_aligned(16)})"
         )
 
-    def _variable(self, value: str) -> str:
-        return f"uint{self._config.bits}_t " + value
+    def _variable(self, value: str, bits: Optional[int] = None) -> str:
+        if bits is None:
+            bits = self._config.bits
+
+        return f"uint{bits}_t " + value
