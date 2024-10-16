@@ -80,7 +80,7 @@ class RegCTestHeader(RegGen):
                     if field.reset is not None
                 )
                 mask = sum(
-                    (1 << (field.bits[0] - field.bits[1] + 1)) - 1
+                    ((1 << (field.bits[0] - field.bits[1] + 1)) - 1) << field.bits[1]
                     for field in offset_field.fields
                     if field.reset is not None
                 )
@@ -131,11 +131,15 @@ class RegCTestHeader(RegGen):
             for field in offset_field.fields:
                 if field.access is not None and field.access == "RO":
                     raws = []
-                    raws.append(field.enums[0].val.value if field.enums else 1)
                     raws.append(
-                        field.enums[1].val.value
+                        (field.enums[0].val.value << field.bits[1])
+                        if field.enums
+                        else 0
+                    )
+                    raws.append(
+                        (field.enums[1].val.value << field.bits[1])
                         if 1 < len(field.enums)
-                        else (raws[0] + 1)
+                        else (raws[0] + (1 << field.bits[1]))
                     )
 
                     self._ro_config_rows.append(
@@ -149,7 +153,7 @@ class RegCTestHeader(RegGen):
                             f"{self._value(raws[1], bits=bits)}",
                             "} },",
                             ".ro_mask = { .u" + str(bits) + " =",
-                            f"{self._value((1 << (field.bits[0] - field.bits[1] + 1)) - 1, bits=bits)}",
+                            f"{self._value(((1 << (field.bits[0] - field.bits[1] + 1)) - 1) << field.bits[1], bits=bits)}",
                             "} },",
                             "//",
                             (
@@ -175,11 +179,15 @@ class RegCTestHeader(RegGen):
             for field in offset_field.fields:
                 if field.access is not None and field.access == "RW":
                     raws = []
-                    raws.append(field.enums[0].val.value if field.enums else 1)
                     raws.append(
-                        field.enums[1].val.value
+                        (field.enums[0].val.value << field.bits[1])
+                        if field.enums
+                        else 0
+                    )
+                    raws.append(
+                        (field.enums[1].val.value << field.bits[1])
                         if 1 < len(field.enums)
-                        else (raws[0] + 1)
+                        else (raws[0] + (1 << field.bits[1]))
                     )
 
                     self._rw_config_rows.append(
@@ -193,7 +201,7 @@ class RegCTestHeader(RegGen):
                             f"{self._value(raws[1], bits=bits)}",
                             "} },",
                             ".rw_mask = { .u" + str(bits) + " =",
-                            f"{self._value((1 << (field.bits[0] - field.bits[1] + 1)) - 1, bits=bits)}",
+                            f"{self._value(((1 << (field.bits[0] - field.bits[1] + 1)) - 1) << field.bits[1], bits=bits)}",
                             "} },",
                             "//",
                             (
