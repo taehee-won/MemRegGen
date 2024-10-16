@@ -19,6 +19,7 @@ class RegConfig:
         "access":     (str,  False, "upper"),
         "reset":      (str,  False, "upper"),
         "raw":        (str,  False, "upper"),
+        "value":      (str,  False, "upper"),
         "plural":     (str,  False, "upper"),
         "array":      (str,  False, "lower"),
         "number":     (str,  False, "upper"),
@@ -86,6 +87,7 @@ class RegConfig:
         self._access: str = args.access
         self._reset: str = args.reset
         self._raw: str = args.raw
+        self._value: str = args.value
         self._plural: str = args.plural
         self._array: str = args.array
         self._number: str = args.number
@@ -153,6 +155,10 @@ class RegConfig:
     @property
     def raw(self) -> str:
         return self._raw
+
+    @property
+    def value(self) -> str:
+        return self._value
 
     @property
     def plural(self) -> str:

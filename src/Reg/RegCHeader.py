@@ -405,8 +405,18 @@ class RegCHeader(RegGen):
                                             field_name, tails=[self._config.mask]
                                         ),
                                         self._value(
-                                            (1 << (field.bits[0] - field.bits[1] + 1))
-                                            - 1,
+                                            (
+                                                (
+                                                    1
+                                                    << (
+                                                        field.bits[0]
+                                                        - field.bits[1]
+                                                        + 1
+                                                    )
+                                                )
+                                                - 1
+                                            )
+                                            << field.bits[1],
                                             bits=item_bits,
                                         ),
                                     ],
@@ -469,15 +479,15 @@ class RegCHeader(RegGen):
                                     "#define",
                                     f"{self._name(self._join(name, field.name), tails=[self._config.raw])}({field.name.lower()})",
                                     f"( ( {field.name.lower()}",
-                                    "&",
-                                    self._name(
-                                        self._join(name, field.name),
-                                        tails=[self._config.mask],
-                                    ),
-                                    ") <<",
+                                    "<<",
                                     self._name(
                                         self._join(name, field.name),
                                         tails=[self._config.shift],
+                                    ),
+                                    ") &",
+                                    self._name(
+                                        self._join(name, field.name),
+                                        tails=[self._config.mask],
                                     ),
                                     ")",
                                 ]
@@ -491,6 +501,31 @@ class RegCHeader(RegGen):
                         f"#define {self._name(name, tails=[self._config.raw])}"
                         + f"({', '.join(field.name.lower() for field in item[1].fields)})"
                         + f" ( {' | '.join(f'{self._name(self._join(name, field.name), tails=[self._config.raw])}({field.name.lower()})' for field in item[1].fields)} )"
+                    )
+
+                    self._append("")
+                    self._append_str(
+                        Str.from_rows(
+                            [
+                                [
+                                    "#define",
+                                    f"{self._name(self._join(name, field.name), tails=[self._config.value])}({self._config.raw.lower()})",
+                                    f"( ( {self._config.raw.lower()}",
+                                    "&",
+                                    self._name(
+                                        self._join(name, field.name),
+                                        tails=[self._config.mask],
+                                    ),
+                                    ") >>",
+                                    self._name(
+                                        self._join(name, field.name),
+                                        tails=[self._config.shift],
+                                    ),
+                                    ")",
+                                ]
+                                for field in item[1].fields
+                            ]
+                        )
                     )
 
                 else:

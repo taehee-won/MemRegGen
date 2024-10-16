@@ -46,6 +46,7 @@ if __name__ == "__main__":
     parser.add_argument("--access", default="MEMORY_ACCESS", type=str, help="memory access name")
     parser.add_argument("--reset",  default="RESET_VALUE",   type=str, help="reset value name")
     parser.add_argument("--raw",    default="RAW",           type=str, help="raw name")
+    parser.add_argument("--value",  default="VALUE",         type=str, help="value name")
 
     parser.add_argument("--plural",        default="S",   type=str, help="plural ending for address array")
     parser.add_argument("--array",         default="ch",  type=str, help="address array name")
