@@ -130,7 +130,8 @@ class RegCHeader(RegGen):
                     removed += 2
 
     def _remove_offset_annotation(self) -> None:
-        del self._offset_rows[0]
+        if self._offset_rows:
+            del self._offset_rows[0]
 
         for row in self._offset_rows:
             for _ in range(3, len(row)):
